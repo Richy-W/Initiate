@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Initiate - D&D Campaign Tracker
 
 A comprehensive Dungeons and Dragons initiative tracker and digital character sheet application built with PHP, MySQL, JavaScript, and AJAX.
@@ -337,3 +338,4 @@ For issues or questions:
 - Initiative tracker
 - Real-time AJAX updates
 - Security implementation
+
