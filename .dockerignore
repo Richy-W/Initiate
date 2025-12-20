@@ -1,0 +1,69 @@
+# Dockerfile
+Dockerfile*
+
+# Docker Compose
+docker-compose*.yml
+docker-compose*.yaml
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Logs
+logs/
+*.log
+
+# Cache and temporary files
+tmp/
+temp/
+cache/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Version control
+.git/
+.gitignore
+.gitattributes
+
+# Documentation (keep in image but ignore changes)
+*.md
+!README.md
+
+# Development files
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# PHP
+vendor/
+composer.lock
+.phpunit.result.cache
+
+# Uploads and user content (handled by volumes)
+uploads/
+user-content/
+
+# Backup files
+*.backup
+*.bak
+*.sql.gz
+
+# Test files
+tests/
+test/
+*.test.php

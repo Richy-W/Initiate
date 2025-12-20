@@ -1,0 +1,108 @@
+version: '3.8'
+
+services:
+  # MySQL Database
+  database:
+    image: mysql:8.0
+    container_name: initiate_database
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-rootpassword123}
+      MYSQL_DATABASE: ${DB_NAME:-initiate_db}
+      MYSQL_USER: ${DB_USER:-initiate_user}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-secure_password123}
+    ports:
+      - "3307:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./docker/mysql/my.cnf:/etc/mysql/conf.d/my.cnf:ro
+    networks:
+      - initiate_network
+    command: --default-authentication-plugin=mysql_native_password
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+  # PHP Web Application
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: initiate_web
+    restart: unless-stopped
+    ports:
+      - "8082:80"
+    volumes:
+      # Development volume mounts - edit files locally, no rebuild needed!
+      - .:/var/www/html:rw
+      - ./logs:/var/www/html/logs
+      - ./uploads:/var/www/html/uploads
+      # Exclude node_modules and .git to improve performance
+      - /var/www/html/node_modules
+      - /var/www/html/.git
+    environment:
+      DB_HOST: database
+      DB_NAME: ${DB_NAME:-initiate_db}
+      DB_USER: ${DB_USER:-initiate_user}
+      DB_PASSWORD: ${DB_PASSWORD:-secure_password123}
+      APP_ENV: ${APP_ENV:-production}
+      BASE_URL: ${BASE_URL:-http://localhost:8082}
+    depends_on:
+      database:
+        condition: service_healthy
+    networks:
+      - initiate_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Redis for session storage (optional, for scalability)
+  redis:
+    image: redis:7-alpine
+    container_name: initiate_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - initiate_network
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 3s
+      retries: 5
+
+  # phpMyAdmin for database management (optional, for development)
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: initiate_phpmyadmin
+    restart: unless-stopped
+    environment:
+      PMA_HOST: database
+      PMA_USER: ${DB_USER:-initiate_user}
+      PMA_PASSWORD: ${DB_PASSWORD:-secure_password123}
+    ports:
+      - "8081:80"
+    depends_on:
+      - database
+    networks:
+      - initiate_network
+    profiles:
+      - development
+
+volumes:
+  db_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  initiate_network:
+    driver: bridge
