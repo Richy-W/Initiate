@@ -1,9 +1,22 @@
 <?php
 // Docker-optimized database configuration
+// Load .env file if it exists (simple implementation)
+if (file_exists(__DIR__ . '/../../.env')) {
+    $envContent = file_get_contents(__DIR__ . '/../../.env');
+    $envLines = explode("\n", $envContent);
+    foreach ($envLines as $line) {
+        $line = trim($line);
+        if ($line && substr($line, 0, 1) !== '#' && strpos($line, '=') !== false) {
+            list($key, $value) = explode('=', $line, 2);
+            $_ENV[trim($key)] = trim($value);
+        }
+    }
+}
+
 define('DB_HOST', $_ENV['DB_HOST'] ?? 'database');
 define('DB_NAME', $_ENV['DB_NAME'] ?? 'initiate_db');
 define('DB_USER', $_ENV['DB_USER'] ?? 'initiate_user');
-define('DB_PASS', $_ENV['DB_PASSWORD'] ?? '');  // Must be set via environment variables
+define('DB_PASS', $_ENV['DB_PASSWORD'] ?? 'secure_password123');  // Development fallback
 define('DB_CHARSET', 'utf8mb4');
 
 // Application configuration
