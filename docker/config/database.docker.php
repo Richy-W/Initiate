@@ -3,7 +3,7 @@
 define('DB_HOST', $_ENV['DB_HOST'] ?? 'database');
 define('DB_NAME', $_ENV['DB_NAME'] ?? 'initiate_db');
 define('DB_USER', $_ENV['DB_USER'] ?? 'initiate_user');
-define('DB_PASS', $_ENV['DB_PASSWORD'] ?? 'secure_password123');
+define('DB_PASS', $_ENV['DB_PASSWORD'] ?? '');  // Must be set via environment variables
 define('DB_CHARSET', 'utf8mb4');
 
 // Application configuration

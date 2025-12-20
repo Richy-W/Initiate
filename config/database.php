@@ -1,9 +1,9 @@
 <?php
-// Database configuration for Docker environment
-define('DB_HOST', 'database');  // Docker container name
-define('DB_NAME', 'initiate_db');
-define('DB_USER', 'initiate_user');
-define('DB_PASS', 'secure_password123');  // Matches docker-compose.yml
+// Database configuration - uses environment variables for security
+define('DB_HOST', $_ENV['DB_HOST'] ?? 'database');  // Docker container name or custom host
+define('DB_NAME', $_ENV['DB_NAME'] ?? 'initiate_db');
+define('DB_USER', $_ENV['DB_USER'] ?? 'initiate_user');
+define('DB_PASS', $_ENV['DB_PASSWORD'] ?? '');  // Must be set via environment variables
 define('DB_CHARSET', 'utf8mb4');
 
 // Application configuration
