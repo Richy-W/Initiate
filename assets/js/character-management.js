@@ -43,55 +43,72 @@ class CharacterManager {
     }
 
     setupModalCloseHandlers() {
-        const modals = ['character-creation-modal', 'my-characters-modal'];
+        const modals = ['character-creation-modal', 'my-characters-modal', 'character-sheet-modal'];
         modals.forEach(modalId => {
-            const modal = document.getElementById(modalId);
-            if (modal) {
-                const closeBtn = modal.querySelector('.close');
-                closeBtn?.addEventListener('click', () => {
-                    modal.style.display = 'none';
-                });
-
-                modal.addEventListener('click', (e) => {
-                    if (e.target === modal) {
-                        modal.style.display = 'none';
-                    }
-                });
-            }
+            this.setupModalCloseHandler(modalId);
         });
     }
 
-    openCharacterCreation() {
-        const modal = document.getElementById('character-creation-modal');
-        const formContainer = document.getElementById('character-creation-form');
-        
-        formContainer.innerHTML = this.generateCharacterCreationForm();
-        this.setupCharacterForm();
-        modal.style.display = 'block';
+    setupModalCloseHandler(modalId) {
+        // ModalFactory handles this automatically now
+        // This method kept for backward compatibility
     }
 
-    generateCharacterCreationForm() {
+    closeModal(modal) {
+        ModalFactory.close(modal);
+    }
+
+    closeCurrentModal() {
+        // Close any visible character modals using ModalFactory
+        ModalFactory.closeAll();
+    }
+
+    openCharacterCreation() {
+        // Use the unified form method to ensure consistency
+        this.showCharacterForm(null, null, false, 'character-creation-modal');
+    }
+
+    generateCharacterCreationForm(character = null, campaignId = null, isNPC = false) {
+        const isEditing = character !== null;
+        const formId = campaignId ? 'campaign-character-form' : 'new-character-form';
+        
         return `
-            <form id="new-character-form" class="character-form">
+            <form id="${formId}" class="character-form">
+                ${campaignId ? `<input type="hidden" name="campaign_id" value="${campaignId}">` : ''}
+                ${isNPC ? `<input type="hidden" name="is_npc" value="true">` : ''}
+                ${isEditing ? `<input type="hidden" name="character_id" value="${character.id}">` : ''}
+                
                 <div class="character-form-grid">
+                    ${!isEditing && isNPC ? `
+                        <div class="character-section">
+                            <h4>📋 Import Options</h4>
+                            <div class="form-group">
+                                <button type="button" class="btn btn-accent btn-sm" onclick="initiate.importFromMonster()">
+                                    Import from Monster Manual
+                                </button>
+                                <small class="text-secondary">Automatically populate stats from D&D 5e monsters</small>
+                            </div>
+                        </div>
+                    ` : ''}
+                    
                     <!-- Basic Information -->
                     <div class="character-section">
                         <h4>🎭 Character Basics</h4>
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="char-name">Character Name *</label>
-                                <input type="text" id="char-name" name="name" class="form-control" required>
+                                <input type="text" id="char-name" name="name" class="form-control" value="${character?.name || ''}" required>
                             </div>
                             <div class="form-group">
                                 <label for="char-level">Level</label>
-                                <input type="number" id="char-level" name="level" class="form-control" value="1" min="1" max="20">
+                                <input type="number" id="char-level" name="level" class="form-control" value="${character?.level || 1}" min="1" max="20">
                             </div>
                         </div>
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="char-species">Species *</label>
                                 <div class="input-with-browse">
-                                    <input type="text" id="char-species" name="species" class="form-control" required>
+                                    <input type="text" id="char-species" name="species" class="form-control" value="${this.extractSpecies(character?.race)}" required>
                                     <button type="button" class="btn btn-sm btn-secondary" onclick="window.dndContent.createContentBrowser('races', (selectedRace) => { 
                                         document.getElementById('char-species').value = selectedRace.name; 
                                         window.characterManager.updateSubspeciesOptions(selectedRace);
@@ -102,6 +119,7 @@ class CharacterManager {
                                 <label for="char-subspecies">Subspecies</label>
                                 <select id="char-subspecies" name="subspecies" class="form-control">
                                     <option value="">Select subspecies...</option>
+                                    ${this.getSubspeciesOptions(character?.race)}
                                 </select>
                             </div>
                         </div>
@@ -109,7 +127,7 @@ class CharacterManager {
                             <div class="form-group">
                                 <label for="char-class">Class *</label>
                                 <div class="input-with-browse">
-                                    <input type="text" id="char-class" name="char_class" class="form-control" required>
+                                    <input type="text" id="char-class" name="char_class" class="form-control" value="${character?.char_class || character?.class || ''}" required>
                                     <button type="button" class="btn btn-sm btn-secondary" onclick="window.dndContent.createContentBrowser('classes', (selectedClass) => { 
                                         document.getElementById('char-class').value = selectedClass.name;
                                         window.characterManager.handleClassSelection(selectedClass);
@@ -120,21 +138,21 @@ class CharacterManager {
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="char-background">Background</label>
-                                <input type="text" id="char-background" name="background" class="form-control">
+                                <input type="text" id="char-background" name="background" class="form-control" value="${character?.background || ''}">
                             </div>
                             <div class="form-group">
                                 <label for="char-alignment">Alignment</label>
                                 <select id="char-alignment" name="alignment" class="form-control">
                                     <option value="">Select alignment...</option>
-                                    <option value="Lawful Good">Lawful Good</option>
-                                    <option value="Neutral Good">Neutral Good</option>
-                                    <option value="Chaotic Good">Chaotic Good</option>
-                                    <option value="Lawful Neutral">Lawful Neutral</option>
-                                    <option value="True Neutral">True Neutral</option>
-                                    <option value="Chaotic Neutral">Chaotic Neutral</option>
-                                    <option value="Lawful Evil">Lawful Evil</option>
-                                    <option value="Neutral Evil">Neutral Evil</option>
-                                    <option value="Chaotic Evil">Chaotic Evil</option>
+                                    <option value="Lawful Good" ${character?.alignment === 'Lawful Good' ? 'selected' : ''}>Lawful Good</option>
+                                    <option value="Neutral Good" ${character?.alignment === 'Neutral Good' ? 'selected' : ''}>Neutral Good</option>
+                                    <option value="Chaotic Good" ${character?.alignment === 'Chaotic Good' ? 'selected' : ''}>Chaotic Good</option>
+                                    <option value="Lawful Neutral" ${character?.alignment === 'Lawful Neutral' ? 'selected' : ''}>Lawful Neutral</option>
+                                    <option value="True Neutral" ${character?.alignment === 'True Neutral' ? 'selected' : ''}>True Neutral</option>
+                                    <option value="Chaotic Neutral" ${character?.alignment === 'Chaotic Neutral' ? 'selected' : ''}>Chaotic Neutral</option>
+                                    <option value="Lawful Evil" ${character?.alignment === 'Lawful Evil' ? 'selected' : ''}>Lawful Evil</option>
+                                    <option value="Neutral Evil" ${character?.alignment === 'Neutral Evil' ? 'selected' : ''}>Neutral Evil</option>
+                                    <option value="Chaotic Evil" ${character?.alignment === 'Chaotic Evil' ? 'selected' : ''}>Chaotic Evil</option>
                                 </select>
                             </div>
                         </div>
@@ -144,9 +162,9 @@ class CharacterManager {
                     <div class="character-section">
                         <h4>💪 Ability Scores</h4>
                         <div class="ability-scores">
-                            ${this.generateAbilityInputs()}
+                            ${this.generateAbilityInputs(character)}
                         </div>
-                        <div style="margin-top: 1rem; text-align: center;">
+                        <div class="dice-roll-section">
                             <button type="button" id="roll-stats-btn" class="btn btn-accent">🎲 Roll 4d6 (drop lowest)</button>
                             <button type="button" id="standard-array-btn" class="btn btn-secondary">📊 Standard Array</button>
                         </div>
@@ -158,25 +176,25 @@ class CharacterManager {
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="char-ac">Armor Class</label>
-                                <input type="number" id="char-ac" name="armor_class" class="form-control" value="10" min="1">
+                                <input type="number" id="char-ac" name="armor_class" class="form-control" value="${character?.armor_class || 10}" min="1">
                             </div>
                             <div class="form-group">
                                 <label for="char-hp">Hit Points</label>
-                                <input type="number" id="char-hp" name="hit_points" class="form-control" value="8" min="1">
+                                <input type="number" id="char-hp" name="hit_points" class="form-control" value="${character?.hit_points || 8}" min="1">
                             </div>
                             <div class="form-group">
                                 <label for="char-speed">Speed</label>
-                                <input type="number" id="char-speed" name="speed" class="form-control" value="30" min="0">
+                                <input type="number" id="char-speed" name="speed" class="form-control" value="${character?.speed || 30}" min="0">
                             </div>
                         </div>
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="char-proficiency">Proficiency Bonus</label>
-                                <input type="number" id="char-proficiency" name="proficiency_bonus" class="form-control" value="2" min="2" max="6">
+                                <input type="number" id="char-proficiency" name="proficiency_bonus" class="form-control" value="${character?.proficiency_bonus || 2}" min="2" max="6">
                             </div>
                             <div class="form-group">
                                 <label for="char-initiative">Initiative Modifier</label>
-                                <input type="number" id="char-initiative" name="initiative_modifier" class="form-control" value="0">
+                                <input type="number" id="char-initiative" name="initiative_modifier" class="form-control" value="${character?.initiative_modifier || 0}">
                             </div>
                         </div>
                     </div>
@@ -186,7 +204,15 @@ class CharacterManager {
                 <div class="character-section">
                     <h4>🎯 Skills & Proficiencies</h4>
                     <div class="skills-grid">
-                        ${this.generateSkillsCheckboxes()}
+                        ${this.generateSkillsCheckboxes(character)}
+                    </div>
+                </div>
+
+                <!-- Saving Throws Section -->
+                <div class="character-section">
+                    <h4>🛡️ Saving Throw Proficiencies</h4>
+                    <div class="saving-throws-grid">
+                        ${this.generateSavingThrowsCheckboxes(character)}
                     </div>
                 </div>
 
@@ -195,11 +221,11 @@ class CharacterManager {
                     <h4>🎒 Equipment</h4>
                     <div class="form-group">
                         <label for="char-equipment">Equipment & Gear</label>
-                        <textarea id="char-equipment" name="equipment" class="form-control" rows="3" placeholder="List your character's weapons, armor, items, and other equipment..."></textarea>
+                        <textarea id="char-equipment" name="equipment" class="form-control" rows="3" placeholder="List your character's weapons, armor, items, and other equipment...">${this.formatEquipmentText(character?.equipment || character?.additional_data?.equipment)}</textarea>
                     </div>
                     <div class="form-group">
                         <label for="char-features">Features & Traits</label>
-                        <textarea id="char-features" name="features_traits" class="form-control" rows="3" placeholder="Racial traits, class features, feats, etc..."></textarea>
+                        <textarea id="char-features" name="features_traits" class="form-control" rows="3" placeholder="Racial traits, class features, feats, etc...">${character?.features_traits || character?.additional_data?.features_traits || ''}</textarea>
                     </div>
                 </div>
 
@@ -208,7 +234,7 @@ class CharacterManager {
                     <h4>📖 Character Story</h4>
                     <div class="form-group">
                         <label for="char-backstory">Backstory</label>
-                        <textarea id="char-backstory" name="backstory" class="form-control" rows="4" placeholder="Your character's background, motivations, and history..."></textarea>
+                        <textarea id="char-backstory" name="backstory" class="form-control" rows="4" placeholder="Your character's background, motivations, and history...">${character?.backstory || character?.additional_data?.backstory || ''}</textarea>
                     </div>
                 </div>
 
@@ -217,25 +243,90 @@ class CharacterManager {
                 <input type="hidden" id="selected-equipment" name="selected_equipment" value="">
 
                 <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">✨ Create Character</button>
-                    <button type="button" class="btn btn-secondary" onclick="document.getElementById('character-creation-modal').style.display='none'">Cancel</button>
+                    <button type="submit" class="btn btn-primary">✨ ${isEditing ? 'Update Character' : 'Create Character'}</button>
+                    <button type="button" class="btn btn-secondary" onclick="window.characterManager.closeCurrentModal()">Cancel</button>
+                    ${isEditing && campaignId ? `
+                        <button type="button" class="btn btn-danger" onclick="initiate.deleteCharacter(${character.id})">Delete Character</button>
+                    ` : ''}
                 </div>
             </form>
         `;
     }
 
-    generateAbilityInputs() {
+    // Public method for other components to use the unified character form
+    showCharacterForm(character = null, campaignId = null, isNPC = false, containerId = 'character-creation-modal', modalTitle = null) {
+        const isEditing = character !== null;
+        const title = modalTitle || (isEditing ? `Edit ${character.name}` : (campaignId ? 'Create Campaign Character' : 'Create New Character'));
+        
+        // Use ModalFactory to create or show existing modal
+        const existingModal = document.getElementById(containerId);
+        if (!existingModal) {
+            ModalFactory.create({
+                id: containerId,
+                title: title,
+                size: 'xlarge',
+                content: this.generateCharacterCreationForm(character, campaignId, isNPC),
+                customClasses: ['character-modal']
+            });
+        } else {
+            // Update existing modal content
+            const titleElement = existingModal.querySelector('.modal-title');
+            if (titleElement) {
+                titleElement.textContent = title;
+            }
+            
+            let contentContainer = existingModal.querySelector('.modal-body');
+            if (containerId === 'character-sheet-modal') {
+                contentContainer = existingModal.querySelector('#character-sheet-content') || contentContainer;
+            }
+            
+            if (contentContainer) {
+                contentContainer.innerHTML = this.generateCharacterCreationForm(character, campaignId, isNPC);
+            }
+        }
+        
+        ModalFactory.show(containerId);
+        
+        // Setup form handlers
+        this.setupCharacterForm();
+        this.setupAbilityModifiers();
+    }
+
+    // Helper methods for unified form
+    extractSpecies(race) {
+        if (!race) return '';
+        return race.split('(')[0].trim();
+    }
+
+    getSubspeciesOptions(race) {
+        if (!race || !race.includes('(')) return '';
+        const subspecies = race.match(/\((.+)\)/);
+        if (subspecies) {
+            return `<option value="${subspecies[1]}" selected>${subspecies[1]}</option>`;
+        }
+        return '';
+    }
+
+    formatEquipmentText(equipment) {
+        if (Array.isArray(equipment)) {
+            return equipment.join('\n');
+        }
+        return equipment || '';
+    }
+
+    generateAbilityInputs(character = null) {
         const abilities = ['strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma'];
         return abilities.map(ability => `
             <div class="ability-score">
                 <label for="char-${ability}">${ability.charAt(0).toUpperCase() + ability.slice(1)}</label>
-                <input type="number" id="char-${ability}" name="${ability}" value="10" min="3" max="20" class="form-control">
+                <input type="number" id="char-${ability}" name="${ability}" value="${character?.[ability] || 10}" min="3" max="20" class="form-control">
                 <div class="ability-modifier" id="${ability}-modifier">+0</div>
             </div>
         `).join('');
     }
 
-    generateSkillsCheckboxes() {
+    generateSkillsCheckboxes(character = null) {
+        const characterSkills = character?.additional_data?.skills || character?.skills || [];
         const skills = [
             { name: 'acrobatics', ability: 'dexterity', label: 'Acrobatics (Dex)' },
             { name: 'animal_handling', ability: 'wisdom', label: 'Animal Handling (Wis)' },
@@ -259,8 +350,27 @@ class CharacterManager {
 
         return skills.map(skill => `
             <div class="skill-item">
-                <input type="checkbox" id="skill-${skill.name}" name="skills[]" value="${skill.name}">
+                <input type="checkbox" id="skill-${skill.name}" name="skills[]" value="${skill.name}" ${characterSkills.includes(skill.name) ? 'checked' : ''}>
                 <label for="skill-${skill.name}">${skill.label}</label>
+            </div>
+        `).join('');
+    }
+
+    generateSavingThrowsCheckboxes(character = null) {
+        const characterSavingThrows = character?.additional_data?.saving_throws || character?.saving_throws || [];
+        const savingThrows = [
+            { name: 'strength', label: 'Strength' },
+            { name: 'dexterity', label: 'Dexterity' },
+            { name: 'constitution', label: 'Constitution' },
+            { name: 'intelligence', label: 'Intelligence' },
+            { name: 'wisdom', label: 'Wisdom' },
+            { name: 'charisma', label: 'Charisma' }
+        ];
+
+        return savingThrows.map(save => `
+            <div class="save-item">
+                <input type="checkbox" id="save-${save.name}" name="saving_throws[]" value="${save.name}" ${characterSavingThrows.includes(save.name) ? 'checked' : ''}>
+                <label for="save-${save.name}">${save.label}</label>
             </div>
         `).join('');
     }
@@ -348,15 +458,31 @@ class CharacterManager {
     }
 
     async submitCharacterForm(form) {
+        // Validate form using FormUtils
+        const validationRules = {
+            name: { required: true, minLength: 2, maxLength: 50, label: 'Character Name' },
+            species: { required: true, label: 'Species' },
+            char_class: { required: true, label: 'Class' },
+            background: { required: true, label: 'Background' },
+            level: { required: true, label: 'Level' }
+        };
+
+        const validation = FormUtils.validate(form, validationRules);
+        if (!validation.isValid) {
+            FormUtils.showErrors(form, validation.errors);
+            return;
+        }
+
         try {
             const formData = new FormData(form);
             
             // Collect skill proficiencies
-            const skills = [];
-            const skillCheckboxes = form.querySelectorAll('input[name="skills[]"]:checked');
-            skillCheckboxes.forEach(checkbox => {
-                skills.push(checkbox.value);
-            });
+            const skills = Array.from(form.querySelectorAll('input[name="skills[]"]:checked'))
+                .map(checkbox => checkbox.value);
+            
+            // Collect saving throw proficiencies
+            const savingThrows = Array.from(form.querySelectorAll('input[name="saving_throws[]"]:checked'))
+                .map(checkbox => checkbox.value);
             
             const characterData = {
                 name: formData.get('name'),
@@ -377,6 +503,7 @@ class CharacterManager {
                 proficiency_bonus: parseInt(formData.get('proficiency_bonus')),
                 initiative_modifier: parseInt(formData.get('initiative_modifier')),
                 skills: skills,
+                saving_throws: savingThrows,
                 equipment: formData.get('equipment'),
                 features_traits: formData.get('features_traits'),
                 backstory: formData.get('backstory'),
@@ -384,23 +511,16 @@ class CharacterManager {
                 selected_equipment: formData.get('selected_equipment')
             };
 
-            const response = await fetch('api/characters.php?action=create_standalone', {
+            const result = await APIService.request('api/characters.php?action=create_standalone', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(characterData)
+                data: characterData,
+                showLoading: true,
+                loadingTarget: form
             });
-            
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            const result = await response.json();
 
             if (result.success) {
                 this.showAlert('Character created successfully!', 'success');
-                document.getElementById('character-creation-modal').style.display = 'none';
+                ModalFactory.closeAll();
                 this.loadMyCharacters(); // Refresh character list
             } else {
                 this.showAlert('Error creating character: ' + result.message, 'error');
@@ -412,21 +532,32 @@ class CharacterManager {
     }
 
     async openMyCharacters() {
-        const modal = document.getElementById('my-characters-modal');
-        const listContainer = document.getElementById('my-characters-list');
+        // Create modal if it doesn't exist
+        if (!document.getElementById('my-characters-modal')) {
+            ModalFactory.create({
+                id: 'my-characters-modal',
+                title: 'My Characters',
+                size: 'large',
+                content: '<div id="my-characters-list">Loading characters...</div>',
+                customClasses: ['my-characters-modal']
+            });
+        }
         
-        listContainer.innerHTML = '<p>Loading characters...</p>';
-        modal.style.display = 'block';
-        
+        ModalFactory.show('my-characters-modal');
         await this.loadMyCharacters();
     }
 
     async loadMyCharacters() {
         try {
-            const response = await fetch('api/characters.php?action=list_personal');
-            const result = await response.json();
+            const result = await APIService.request('api/characters.php', {
+                method: 'GET',
+                data: { action: 'list_personal' },
+                showLoading: true,
+                loadingTarget: 'my-characters-list'
+            });
 
-            const listContainer = document.getElementById('my-characters-list');
+            const listContainer = DOMUtils.safeQuery('#my-characters-list');
+            if (!listContainer) return;
 
             if (result.success && result.characters) {
                 this.characters = result.characters;
@@ -559,18 +690,18 @@ class CharacterManager {
                     <!-- Quick Stats -->
                     <div class="character-section">
                         <h4>⚡ Quick Stats</h4>
-                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
-                            <div style="text-align: center; padding: 0.5rem; background-color: rgba(74, 85, 104, 0.5); border-radius: 4px;">
-                                <div style="font-size: 0.8rem; color: var(--text-secondary);">Armor Class</div>
-                                <div style="font-size: 1.4rem; font-weight: bold;">${character.armor_class}</div>
+                        <div class="character-stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-label">Armor Class</div>
+                                <div class="stat-value">${character.armor_class}</div>
                             </div>
-                            <div style="text-align: center; padding: 0.5rem; background-color: rgba(74, 85, 104, 0.5); border-radius: 4px;">
-                                <div style="font-size: 0.8rem; color: var(--text-secondary);">Hit Points</div>
-                                <div style="font-size: 1.4rem; font-weight: bold;">${character.hit_points}</div>
+                            <div class="stat-card">
+                                <div class="stat-label">Hit Points</div>
+                                <div class="stat-value">${character.hit_points}</div>
                             </div>
-                            <div style="text-align: center; padding: 0.5rem; background-color: rgba(74, 85, 104, 0.5); border-radius: 4px;">
-                                <div style="font-size: 0.8rem; color: var(--text-secondary);">Speed</div>
-                                <div style="font-size: 1.4rem; font-weight: bold;">${character.speed} ft</div>
+                            <div class="stat-card">
+                                <div class="stat-label">Speed</div>
+                                <div class="stat-value">${character.speed} ft</div>
                             </div>
                         </div>
                     </div>
@@ -580,33 +711,33 @@ class CharacterManager {
                         <h4>💪 Ability Scores</h4>
                         <div class="ability-scores">
                             <div class="ability-score">
-                                <div style="font-weight: bold;">STR</div>
-                                <div style="font-size: 1.2rem;">${character.strength}</div>
+                                <div class="ability-label">STR</div>
+                                <div class="ability-value">${character.strength}</div>
                                 <div class="ability-modifier">${getModifier(character.strength)}</div>
                             </div>
                             <div class="ability-score">
-                                <div style="font-weight: bold;">DEX</div>
-                                <div style="font-size: 1.2rem;">${character.dexterity}</div>
+                                <div class="ability-label">DEX</div>
+                                <div class="ability-value">${character.dexterity}</div>
                                 <div class="ability-modifier">${getModifier(character.dexterity)}</div>
                             </div>
                             <div class="ability-score">
-                                <div style="font-weight: bold;">CON</div>
-                                <div style="font-size: 1.2rem;">${character.constitution}</div>
+                                <div class="ability-label">CON</div>
+                                <div class="ability-value">${character.constitution}</div>
                                 <div class="ability-modifier">${getModifier(character.constitution)}</div>
                             </div>
                             <div class="ability-score">
-                                <div style="font-weight: bold;">INT</div>
-                                <div style="font-size: 1.2rem;">${character.intelligence}</div>
+                                <div class="ability-label">INT</div>
+                                <div class="ability-value">${character.intelligence}</div>
                                 <div class="ability-modifier">${getModifier(character.intelligence)}</div>
                             </div>
                             <div class="ability-score">
-                                <div style="font-weight: bold;">WIS</div>
-                                <div style="font-size: 1.2rem;">${character.wisdom}</div>
+                                <div class="ability-label">WIS</div>
+                                <div class="ability-value">${character.wisdom}</div>
                                 <div class="ability-modifier">${getModifier(character.wisdom)}</div>
                             </div>
                             <div class="ability-score">
-                                <div style="font-weight: bold;">CHA</div>
-                                <div style="font-size: 1.2rem;">${character.charisma}</div>
+                                <div class="ability-label">CHA</div>
+                                <div class="ability-value">${character.charisma}</div>
                                 <div class="ability-modifier">${getModifier(character.charisma)}</div>
                             </div>
                         </div>
@@ -616,14 +747,14 @@ class CharacterManager {
                 ${character.equipment ? `
                     <div class="character-section">
                         <h4>🎒 Equipment</h4>
-                        <div style="white-space: pre-wrap;">${character.equipment}</div>
+                        <div class="equipment-text">${character.equipment}</div>
                     </div>
                 ` : ''}
 
                 ${character.features_traits ? `
                     <div class="character-section">
                         <h4>✨ Features & Traits</h4>
-                        <div style="white-space: pre-wrap;">${character.features_traits}</div>
+                        <div class="features-text">${character.features_traits}</div>
                     </div>
                 ` : ''}
             </div>
@@ -729,6 +860,34 @@ class CharacterManager {
             // Store equipment in hidden field  
             document.getElementById('selected-equipment').value = JSON.stringify(selections.equipment);
             
+            // Auto-select saving throw proficiencies from class data
+            if (this.selectedClassData && this.selectedClassData.saving_throw_proficiencies) {
+                this.selectedClassData.saving_throw_proficiencies.forEach(save => {
+                    const saveName = (save.name || save.index || save).toLowerCase();
+                    // Map API names to our form field names
+                    const saveMapping = {
+                        'strength': 'strength',
+                        'dexterity': 'dexterity', 
+                        'constitution': 'constitution',
+                        'intelligence': 'intelligence',
+                        'wisdom': 'wisdom',
+                        'charisma': 'charisma',
+                        'str': 'strength',
+                        'dex': 'dexterity',
+                        'con': 'constitution',
+                        'int': 'intelligence',
+                        'wis': 'wisdom',
+                        'cha': 'charisma'
+                    };
+                    
+                    const mappedSave = saveMapping[saveName] || saveName;
+                    const saveCheckbox = document.getElementById(`save-${mappedSave}`);
+                    if (saveCheckbox) {
+                        saveCheckbox.checked = true;
+                    }
+                });
+            }
+            
             // Update equipment field with selected items
             const equipmentField = document.getElementById('char-equipment');
             if (equipmentField && selections.equipment.length > 0) {
@@ -778,7 +937,7 @@ class CharacterManager {
                     }
                 });
                 
-                this.showAlert('✅ Class proficiencies and equipment have been added to your character!', 'success');
+                this.showAlert('✅ Class proficiencies, equipment, and saving throws have been added to your character!', 'success');
             }
         }
     }
@@ -794,7 +953,12 @@ class CharacterManager {
     }
 }
 
-// Initialize character manager when page loads
+// Initialize character manager immediately
+window.characterManager = new CharacterManager();
+
+// Also reinitialize on DOM ready to set up event listeners for elements that may not have existed
 document.addEventListener('DOMContentLoaded', () => {
-    window.characterManager = new CharacterManager();
+    if (!window.characterManager) {
+        window.characterManager = new CharacterManager();
+    }
 });

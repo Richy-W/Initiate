@@ -116,6 +116,42 @@ function getUserCampaigns($user_id)
     }
 }
 
+function getUserArchivedCampaigns($user_id, $search_term = '')
+{
+    global $pdo;
+
+    try {
+        $search_sql = '';
+        $params = [$user_id, $user_id];
+        
+        if (!empty($search_term)) {
+            $search_sql = ' AND (c.name LIKE ? OR c.description LIKE ? OR u.username LIKE ?)';
+            $search_param = '%' . $search_term . '%';
+            $params[] = $search_param;
+            $params[] = $search_param;
+            $params[] = $search_param;
+        }
+
+        $stmt = $pdo->prepare("
+            SELECT c.*, cm.joined_at,
+                   CASE WHEN c.game_master_id = ? THEN 'GM' ELSE 'Player' END as role,
+                   u.username as gm_username,
+                   (SELECT COUNT(*) FROM characters WHERE campaign_id = c.id AND is_active = FALSE) as character_count
+            FROM campaigns c 
+            JOIN campaign_members cm ON c.id = cm.campaign_id 
+            JOIN users u ON c.game_master_id = u.id
+            WHERE cm.user_id = ? AND c.is_active = FALSE {$search_sql}
+            ORDER BY c.updated_at DESC
+        ");
+        $stmt->execute($params);
+
+        return $stmt->fetchAll();
+    } catch (PDOException $e) {
+        error_log("Error fetching archived campaigns: " . $e->getMessage());
+        return [];
+    }
+}
+
 function getCampaignDetails($campaign_id, $user_id)
 {
     global $pdo;
@@ -218,5 +254,81 @@ function leaveCampaign($campaign_id, $user_id)
     } catch (PDOException $e) {
         error_log("Error leaving campaign: " . $e->getMessage());
         return ['success' => false, 'message' => 'An error occurred while leaving the campaign.'];
+    }
+}
+
+function endCampaign($campaign_id, $user_id)
+{
+    global $pdo;
+
+    try {
+        // Check if user is the GM of this campaign
+        if (!isGameMaster($campaign_id, $user_id)) {
+            return ['success' => false, 'message' => 'Only the Game Master can end the campaign.'];
+        }
+
+        // Set campaign to inactive
+        $stmt = $pdo->prepare("UPDATE campaigns SET is_active = FALSE WHERE id = ? AND game_master_id = ?");
+        $stmt->execute([$campaign_id, $user_id]);
+
+        // Optionally deactivate all characters in the campaign (they can be reactivated if needed)
+        $stmt = $pdo->prepare("UPDATE characters SET is_active = FALSE WHERE campaign_id = ?");
+        $stmt->execute([$campaign_id]);
+
+        return ['success' => true, 'message' => 'Campaign has been ended successfully. All characters have been archived.'];
+    } catch (PDOException $e) {
+        error_log("Error ending campaign: " . $e->getMessage());
+        return ['success' => false, 'message' => 'An error occurred while ending the campaign.'];
+    }
+}
+
+function getArchivedCampaignCharacters($campaign_id, $user_id)
+{
+    global $pdo;
+
+    error_log("DEBUG: getArchivedCampaignCharacters called with campaign_id=$campaign_id, user_id=$user_id");
+
+    try {
+        // First verify the user was a member of this campaign (regardless of member active status for archived campaigns)
+        $stmt = $pdo->prepare("
+            SELECT c.name as campaign_name 
+            FROM campaigns c 
+            JOIN campaign_members cm ON c.id = cm.campaign_id 
+            WHERE c.id = ? AND cm.user_id = ? AND c.is_active = FALSE
+        ");
+        $stmt->execute([$campaign_id, $user_id]);
+        $campaign = $stmt->fetch();
+
+        error_log("DEBUG: Campaign lookup result: " . json_encode($campaign));
+
+        if (!$campaign) {
+            error_log("DEBUG: Campaign not found or access denied");
+            return ['success' => false, 'message' => 'Campaign not found or access denied.'];
+        }
+
+        // Get characters from the archived campaign
+        $stmt = $pdo->prepare("
+            SELECT id, name, race, 
+                   COALESCE(char_class, class) as class, 
+                   level, ability_scores, skills, background, alignment,
+                   created_at
+            FROM characters 
+            WHERE campaign_id = ? AND user_id = ? AND is_active = FALSE
+            ORDER BY created_at DESC
+        ");
+        $stmt->execute([$campaign_id, $user_id]);
+        $characters = $stmt->fetchAll();
+
+        error_log("DEBUG: Found " . count($characters) . " characters");
+
+        return [
+            'success' => true,
+            'campaign_name' => $campaign['campaign_name'],
+            'characters' => $characters
+        ];
+    } catch (PDOException $e) {
+        error_log("ERROR fetching archived characters: " . $e->getMessage());
+        error_log("ERROR SQL State: " . $e->getCode());
+        return ['success' => false, 'message' => 'An error occurred while fetching characters.'];
     }
 }

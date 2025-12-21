@@ -87,7 +87,7 @@ class DnDContent {
         // Spell Level and School
         const levelText = spell.level === 0 ? 'Cantrip' : `${spell.level}${this.getOrdinalSuffix(spell.level)} Level`;
         const schoolText = spell.school?.name || 'Unknown School';
-        formatted += `<div style="background-color: rgba(74, 85, 104, 0.3); padding: 1rem; border-radius: 4px; margin-bottom: 1rem;">`;
+        formatted += `<div class="stat-block">`;
         formatted += `<p><strong>Level:</strong> ${levelText} ${schoolText} Spell</p>`;
         
         // Spell Basics
@@ -106,8 +106,8 @@ class DnDContent {
         
         // Components Section
         if (spell.components?.length) {
-            formatted += `<div style="background-color: rgba(74, 85, 104, 0.3); padding: 1rem; border-radius: 4px; margin-bottom: 1rem;">`;
-            formatted += `<h5 style="color: var(--accent-color); margin-bottom: 0.5rem;">Components</h5>`;
+            formatted += `<div class="spell-info-box">`;
+            formatted += `<h5 class="spell-section-header">Components</h5>`;
             
             const componentNames = {
                 'V': 'Verbal',
@@ -136,8 +136,8 @@ class DnDContent {
         
         // Description
         if (spell.desc?.length) {
-            formatted += `<div style="background-color: rgba(74, 85, 104, 0.3); padding: 1rem; border-radius: 4px; margin-bottom: 1rem;">`;
-            formatted += `<h5 style="color: var(--accent-color); margin-bottom: 0.5rem;">Description</h5>`;
+            formatted += `<div class="spell-info-box">`;
+            formatted += `<h5 class="spell-section-header">Description</h5>`;
             spell.desc.forEach(paragraph => {
                 formatted += `<p>${paragraph}</p>`;
             });
@@ -146,8 +146,8 @@ class DnDContent {
         
         // At Higher Levels
         if (spell.higher_level?.length) {
-            formatted += `<div style="background-color: rgba(74, 85, 104, 0.3); padding: 1rem; border-radius: 4px; margin-bottom: 1rem;">`;
-            formatted += `<h5 style="color: var(--accent-color); margin-bottom: 0.5rem;">At Higher Levels</h5>`;
+            formatted += `<div class="spell-info-box">`;
+            formatted += `<h5 class="spell-section-header">At Higher Levels</h5>`;
             spell.higher_level.forEach(paragraph => {
                 formatted += `<p>${paragraph}</p>`;
             });
@@ -156,8 +156,8 @@ class DnDContent {
         
         // Classes that can use this spell
         if (spell.classes?.length) {
-            formatted += `<div style="background-color: rgba(74, 85, 104, 0.3); padding: 1rem; border-radius: 4px; margin-bottom: 1rem;">`;
-            formatted += `<h5 style="color: var(--accent-color); margin-bottom: 0.5rem;">Available To</h5>`;
+            formatted += `<div class="spell-info-box">`;
+            formatted += `<h5 class="spell-section-header">Available To</h5>`;
             const classList = spell.classes.map(cls => cls.name).join(', ');
             formatted += `<p><strong>Classes:</strong> ${classList}</p>`;
             
@@ -178,7 +178,7 @@ class DnDContent {
             <h4>${monster.name}</h4>`;
         
         // Basic Info
-        formatted += `<div style="background-color: rgba(74, 85, 104, 0.3); padding: 1rem; border-radius: 4px; margin-bottom: 1rem;">`;
+        formatted += `<div class="stat-block">`;
         if (monster.size || monster.type) {
             const alignment = monster.alignment || 'Unspecified alignment';
             formatted += `<p><strong>Type:</strong> ${monster.size || 'Medium'} ${monster.type || 'creature'}, ${alignment}</p>`;
@@ -200,10 +200,10 @@ class DnDContent {
         
         // Ability Scores with Modifiers
         if (monster.strength !== undefined) {
-            formatted += `<div style="background-color: rgba(74, 85, 104, 0.3); padding: 1rem; border-radius: 4px; margin-bottom: 1rem;">`;
-            formatted += `<h5 style="color: var(--accent-color); margin-bottom: 0.5rem;">Ability Scores</h5>`;
+            formatted += `<div class="stat-block">`;
+            formatted += `<h5 class="stat-block-title">Ability Scores</h5>`;
             
-            formatted += `<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; text-align: center;">`;
+            formatted += `<div class="ability-scores-grid">`;
             formatted += `<div><strong>STR</strong><br>${monster.strength} (${this.getModifier(monster.strength)})</div>`;
             formatted += `<div><strong>DEX</strong><br>${monster.dexterity} (${this.getModifier(monster.dexterity)})</div>`;
             formatted += `<div><strong>CON</strong><br>${monster.constitution} (${this.getModifier(monster.constitution)})</div>`;
@@ -214,8 +214,8 @@ class DnDContent {
         }
         
         // Defenses and Resistances
-        formatted += `<div style="background-color: rgba(74, 85, 104, 0.3); padding: 1rem; border-radius: 4px; margin-bottom: 1rem;">`;
-        formatted += `<h5 style="color: var(--accent-color); margin-bottom: 0.5rem;">Defenses</h5>`;
+        formatted += `<div class="stat-block">`;
+        formatted += `<h5 class="stat-block-title">Defenses</h5>`;
         
         if (monster.saving_throws) {
             const saves = Object.entries(monster.saving_throws).map(([ability, bonus]) => 
@@ -269,11 +269,11 @@ class DnDContent {
         
         // Special Abilities
         if (monster.special_abilities?.length) {
-            formatted += `<div style="background-color: rgba(74, 85, 104, 0.3); padding: 1rem; border-radius: 4px; margin-bottom: 1rem;">`;
-            formatted += `<h5 style="color: var(--accent-color); margin-bottom: 0.5rem;">Special Abilities</h5>`;
+            formatted += `<div class="monster-info-box">`;
+            formatted += `<h5 class="monster-section-header">Special Abilities</h5>`;
             monster.special_abilities.forEach(ability => {
-                formatted += `<div style="margin-bottom: 1rem;">`;
-                formatted += `<h6 style="color: var(--accent-color); margin-bottom: 0.25rem;">${ability.name}</h6>`;
+                formatted += `<div class="ability-item">`;
+                formatted += `<h6 class="ability-name">${ability.name}</h6>`;
                 formatted += `<p>${ability.desc || 'Consult the Monster Manual for details.'}</p>`;
                 formatted += `</div>`;
             });
@@ -282,11 +282,11 @@ class DnDContent {
         
         // Actions
         if (monster.actions?.length) {
-            formatted += `<div style="background-color: rgba(74, 85, 104, 0.3); padding: 1rem; border-radius: 4px; margin-bottom: 1rem;">`;
-            formatted += `<h5 style="color: var(--accent-color); margin-bottom: 0.5rem;">Actions</h5>`;
+            formatted += `<div class="monster-info-box">`;
+            formatted += `<h5 class="monster-section-header">Actions</h5>`;
             monster.actions.forEach(action => {
-                formatted += `<div style="margin-bottom: 1rem;">`;
-                formatted += `<h6 style="color: var(--accent-color); margin-bottom: 0.25rem;">${action.name}</h6>`;
+                formatted += `<div class="ability-item">`;
+                formatted += `<h6 class="ability-name">${action.name}</h6>`;
                 formatted += `<p>${action.desc || 'Consult the Monster Manual for attack and damage details.'}</p>`;
                 
                 if (action.attack_bonus) {
@@ -305,12 +305,12 @@ class DnDContent {
         
         // Legendary Actions
         if (monster.legendary_actions?.length) {
-            formatted += `<div style="background-color: rgba(74, 85, 104, 0.3); padding: 1rem; border-radius: 4px; margin-bottom: 1rem;">`;
-            formatted += `<h5 style="color: var(--accent-color); margin-bottom: 0.5rem;">Legendary Actions</h5>`;
+            formatted += `<div class="stat-block">`;
+            formatted += `<h5 class="stat-block-title">Legendary Actions</h5>`;
             formatted += `<p><em>The ${monster.name} can take 3 legendary actions, choosing from the options below. Only one legendary action option can be used at a time and only at the end of another creature's turn. The ${monster.name} regains spent legendary actions at the start of its turn.</em></p>`;
             monster.legendary_actions.forEach(action => {
-                formatted += `<div style="margin-bottom: 0.5rem;">`;
-                formatted += `<h6 style="color: var(--accent-color); margin-bottom: 0.25rem;">${action.name}</h6>`;
+                formatted += `<div class="legendary-action">`;
+                formatted += `<h6 class="legendary-action-title">${action.name}</h6>`;
                 formatted += `<p>${action.desc || 'See Monster Manual for details.'}</p>`;
                 formatted += `</div>`;
             });
@@ -387,21 +387,21 @@ class DnDContent {
             `<button type="button" id="select-${type}" class="btn btn-primary" disabled>Select</button>` : '';
         
         modal.innerHTML = `
-            <div class="modal-content" style="max-width: 1000px; height: 80vh;">
+            <div class="modal-content content-modal">
                 <div class="modal-header">
                     <h3>Browse ${this.getDisplayName(type)}</h3>
                     <button class="close">&times;</button>
                 </div>
-                <div class="modal-body" style="display: flex; height: calc(80vh - 120px);">
-                    <div class="content-search" style="width: 280px; padding-right: 1rem; border-right: 1px solid var(--border-color);">
+                <div class="modal-body">
+                    <div class="content-search">
                         <div class="form-group">
                             <input type="text" id="${type}-search" placeholder="Search ${this.getDisplayName(type).toLowerCase()}..." class="form-control">
                         </div>
-                        <div id="${type}-list" style="max-height: calc(100% - 60px); overflow-y: auto;">
+                        <div id="${type}-list" class="content-list">
                             <!-- Content will be loaded here -->
                         </div>
                     </div>
-                    <div class="content-details" style="flex: 1; padding-left: 1rem; overflow-y: auto; overflow-x: hidden;">
+                    <div class="content-details">
                         <div id="${type}-details">
                             <p class="text-secondary">Select a ${this.getDisplayName(type, true).toLowerCase()} from the list to view details.</p>
                         </div>
@@ -567,7 +567,7 @@ class DnDContent {
         }
 
         listContainer.innerHTML = filteredItems.map(item => `
-            <div class="content-item" data-index="${item.index}" style="padding: 0.5rem; margin-bottom: 0.5rem; border: 1px solid var(--border-color); border-radius: 4px; cursor: pointer;">
+            <div class="content-item" data-index="${item.index}">
                 <strong>${item.name}</strong>
                 ${type === 'spells' && item.level !== undefined ? `<br><small>Level ${item.level === 0 ? 'Cantrip' : item.level}</small>` : ''}
                 ${type === 'monsters' && item.challenge_rating !== undefined ? `<br><small>CR ${item.challenge_rating}</small>` : ''}
@@ -713,8 +713,8 @@ class DnDContent {
         if (race.traits?.length) {
             formatted += `<h5>Racial Traits:</h5>`;
             race.traits.forEach(trait => {
-                formatted += `<div style="margin: 1rem 0; padding: 1rem; background-color: rgba(74, 85, 104, 0.3); border-radius: 4px;">`;
-                formatted += `<h6 style="color: var(--accent-color); margin-bottom: 0.5rem;">${trait.name}</h6>`;
+                formatted += `<div class="feature-content">`;
+                formatted += `<h6 class="feature-title">${trait.name}</h6>`;
                 
                 if (trait.desc && trait.desc.length > 0) {
                     trait.desc.forEach(desc => {
@@ -748,7 +748,7 @@ class DnDContent {
         
         if (race.subraces?.length) {
             formatted += `<h5>Subraces:</h5>`;
-            formatted += `<div style="background-color: rgba(74, 85, 104, 0.3); padding: 1rem; border-radius: 4px;">`;
+            formatted += `<div class="stat-block">`;
             formatted += `<ul>${race.subraces.map(subrace => `<li><strong>${subrace.name}:</strong> Adds additional traits and abilities</li>`).join('')}</ul>`;
             formatted += `</div>`;
         }
@@ -802,7 +802,7 @@ class DnDContent {
         if (charClass.proficiency_choices?.length) {
             formatted += `<h5>Proficiency Choices:</h5>`;
             charClass.proficiency_choices.forEach((choice, choiceIndex) => {
-                formatted += `<div style="margin: 0.5rem 0; padding: 1rem; background-color: rgba(74, 85, 104, 0.3); border-radius: 4px;">`;
+                formatted += `<div class="spell-details">`;
                 formatted += `<p><strong>Choose ${choice.choose || 'some'} from:</strong></p>`;
                 if (choice.from?.options) {
                     // Only add interactive elements for character creation
@@ -812,21 +812,21 @@ class DnDContent {
                             const profName = opt.item?.name || opt.name || 'Unknown';
                             const profValue = opt.item?.index || profName.toLowerCase().replace(/[^a-z0-9]/g, '-');
                             formatted += `
-                                <label style="display: flex; align-items: center; margin: 0.2rem 0; cursor: pointer; font-size: 0.9rem;">
+                                <label class="proficiency-label">
                                     <input type="checkbox" 
                                            class="proficiency-choice" 
                                            data-choice-group="${choiceIndex}"
                                            value="${profValue}" 
                                            data-name="${profName}"
-                                           style="margin: 0 0.4rem 0 0; flex-shrink: 0; width: 16px; height: 16px;">
-                                    <span style="line-height: 1.2;">${profName}</span>
+                                           class="proficiency-checkbox">
+                                    <span class="proficiency-text">${profName}</span>
                                 </label>`;
                         });
                         formatted += `</div>`;
-                        formatted += `<p class="selection-count" id="prof-count-${choiceIndex}" style="font-size: 0.9em; color: var(--accent-color); margin-top: 0.5rem;">Selected: 0/${choice.choose || 1}</p>`;
+                        formatted += `<p class="selection-count" id="prof-count-${choiceIndex}">Selected: 0/${choice.choose || 1}</p>`;
                     } else {
                         // For reference mode, just list the options
-                        formatted += `<ul style="margin: 0.5rem 0;">`;
+                        formatted += `<ul class="spell-list">`;
                         choice.from.options.forEach((opt, optIndex) => {
                             const profName = opt.item?.name || opt.name || 'Unknown';
                             formatted += `<li>${profName}</li>`;
@@ -840,7 +840,7 @@ class DnDContent {
         
         if (charClass.starting_equipment?.length) {
             formatted += `<h5>Starting Equipment:</h5>`;
-            formatted += `<div style="background-color: rgba(74, 85, 104, 0.3); padding: 1rem; border-radius: 4px;">`;
+            formatted += `<div class="stat-block">`;
             formatted += `<ul>`;
             charClass.starting_equipment.forEach(item => {
                 const itemName = item.equipment?.name || item.name || 'Equipment';
@@ -853,7 +853,7 @@ class DnDContent {
         if (charClass.starting_equipment_options?.length) {
             formatted += `<h5>Starting Equipment Options:</h5>`;
             charClass.starting_equipment_options.forEach((option, index) => {
-                formatted += `<div style="margin: 0.5rem 0; padding: 1rem; background-color: rgba(74, 85, 104, 0.3); border-radius: 4px;">`;
+                formatted += `<div class="spell-details">`;
                 
                 // Show the descriptive text first if available
                 if (option.desc) {
@@ -865,7 +865,7 @@ class DnDContent {
                 // Show detailed options with radio buttons for selection (only for character creation)
                 if (option.from?.options?.length) {
                     if (context === 'character-creation') {
-                        formatted += `<div style="margin-top: 0.5rem; padding-left: 1rem;" class="equipment-selection" data-option-index="${index}">`;
+                        formatted += `<div class="equipment-selection" data-option-index="${index}">`;
                         
                         option.from.options.forEach((opt, optIndex) => {
                             let optionText = '';
@@ -893,21 +893,21 @@ class DnDContent {
                         }
                         
                         formatted += `
-                            <label style="display: flex; align-items: center; margin: 0.2rem 0; cursor: pointer; font-size: 0.9rem;">
+                            <label class="proficiency-label">
                                 <input type="radio" 
                                        name="equipment-option-${index}"
                                        class="equipment-choice"
                                        value="${optionValue}"
                                        data-option-group="${index}"
-                                       style="margin: 0 0.4rem 0 0; flex-shrink: 0; width: 16px; height: 16px;">
-                                <span style="line-height: 1.2;">${optionText}</span>
+                                       class="proficiency-checkbox">
+                                <span class="proficiency-text">${optionText}</span>
                             </label>`;
                     });
                     
                     formatted += `</div>`;
                     } else {
                         // For reference mode, just list the options
-                        formatted += `<ul style="margin-top: 0.5rem; padding-left: 1rem;">`;
+                        formatted += `<ul class="spell-list">`;
                         option.from.options.forEach((opt, optIndex) => {
                             let optionText = '';
                             
@@ -940,10 +940,10 @@ class DnDContent {
         // Add class features information with detailed API data
         if (charClass.class_levels) {
             formatted += `<h5>Class Features by Level:</h5>`;
-            formatted += `<div style="background-color: rgba(74, 85, 104, 0.3); padding: 1rem; border-radius: 4px;">`;
+            formatted += `<div class="stat-block">`;
             
             // Fetch and display actual class level features
-            formatted += `<div id="class-features-${charClass.index}" style="margin: 0;">`;
+            formatted += `<div id="class-features-${charClass.index}">`;
             formatted += `<p><em>Loading class features for your level...</em></p>`;
             formatted += `</div>`;
             formatted += `</div>`;
@@ -966,7 +966,7 @@ class DnDContent {
         
         if (charClass.spellcasting) {
             formatted += `<h5>Spellcasting:</h5>`;
-            formatted += `<div style="background-color: rgba(74, 85, 104, 0.3); padding: 1rem; border-radius: 4px;">`;
+            formatted += `<div class="stat-block">`;
             formatted += `<p><strong>Spellcasting Ability:</strong> ${charClass.spellcasting.spellcasting_ability?.name || 'See class description'}</p>`;
             formatted += `<p>This class has access to spells and magical abilities. The spellcasting progression and spell list are detailed in the Player's Handbook.</p>`;
             formatted += `</div>`;
@@ -1102,7 +1102,7 @@ class DnDContent {
             console.error('Error loading class features:', error);
             const container = document.getElementById(`class-features-${classIndex}`);
             if (container) {
-                container.innerHTML = `<p style="margin: 0; color: #ff6b6b;">Unable to load class features. Please try again.<br><small style="color: #aaa;">Error: ${error.message}</small></p>`;
+                container.innerHTML = `<p class="feature-error">Unable to load class features. Please try again.<br><small class="feature-error-detail">Error: ${error.message}</small></p>`;
             }
         }
     }
@@ -1115,23 +1115,23 @@ class DnDContent {
      * @param {HTMLElement} container - Container to display features
      */
     displayClassFeatures(levelData, characterLevel, context, container) {
-        let featuresHtml = '<div style="max-height: 300px; overflow-y: auto; margin: 0;">';
+        let featuresHtml = '<div class="class-features-container">';
         
         // For reference mode, show all levels; for character creation, show only up to current level
         const availableLevels = context === 'reference' ? levelData : levelData.filter(level => level.level <= characterLevel);
         
         if (availableLevels.length === 0) {
-            featuresHtml += '<p style="margin: 0;">No features available at this level.</p>';
+            featuresHtml += '<p class="no-features">No features available at this level.</p>';
         } else {
             availableLevels.forEach(level => {
                 if (level.features && level.features.length > 0) {
-                    featuresHtml += `<div style="margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.1);">`;
+                    featuresHtml += `<div class="class-feature-level">`;
                     const currentMarker = (context === 'character-creation' && level.level === characterLevel) ? ' (Current)' : '';
-                    featuresHtml += `<h6 style="color: var(--accent-color); margin: 0 0 0.5rem 0;">Level ${level.level}${currentMarker}</h6>`;
-                    featuresHtml += `<ul style="margin: 0; padding-left: 1.2rem; list-style-type: disc;">`;
+                    featuresHtml += `<h6 class="level-title">Level ${level.level}${currentMarker}</h6>`;
+                    featuresHtml += `<ul class="feature-list">`;
                     
                     level.features.forEach(feature => {
-                        featuresHtml += `<li style="margin: 0.25rem 0; line-height: 1.4;"><strong>${feature.name}</strong></li>`;
+                        featuresHtml += `<li class="feature-item"><strong>${feature.name}</strong></li>`;
                     });
                     featuresHtml += `</ul>`;
                     featuresHtml += `</div>`;
@@ -1151,29 +1151,29 @@ class DnDContent {
      * @param {HTMLElement} container - Container element
      */
     displayPlaceholderFeatures(classIndex, characterLevel, context, container) {
-        let featuresHtml = '<div style="max-height: 300px; overflow-y: auto; margin: 0;">';
+        let featuresHtml = '<div class="class-features-container">';
         
         if (context === 'reference') {
             featuresHtml += `
-                <div style="padding: 1rem; background-color: rgba(74, 85, 104, 0.3); border-radius: 4px; text-align: center;">
-                    <h6 style="color: var(--accent-color); margin: 0 0 0.5rem 0;">Class Features by Level</h6>
-                    <p style="margin: 0; color: #ccc; font-style: italic;">
+                <div class="feature-placeholder">
+                    <h6 class="level-title">Class Features by Level</h6>
+                    <p class="feature-info">
                         Detailed class features are available in the Player's Handbook.<br>
                         This class gains new features and abilities as you level up from 1-20.
                     </p>
-                    <p style="margin: 0.5rem 0 0 0; font-size: 0.9em; color: #aaa;">
+                    <p class="feature-note">
                         Features include class abilities, spell progression (if applicable), and improved capabilities.
                     </p>
                 </div>`;
         } else {
             featuresHtml += `
-                <div style="padding: 1rem; background-color: rgba(74, 85, 104, 0.3); border-radius: 4px; text-align: center;">
-                    <h6 style="color: var(--accent-color); margin: 0 0 0.5rem 0;">Level ${characterLevel} Features</h6>
-                    <p style="margin: 0; color: #ccc; font-style: italic;">
+                <div class="feature-placeholder">
+                    <h6 class="level-title">Level ${characterLevel} Features</h6>
+                    <p class="feature-info">
                         Your ${classIndex} character will have all class features available up to level ${characterLevel}.<br>
                         Consult the Player's Handbook for detailed feature descriptions.
                     </p>
-                    ${characterLevel < 20 ? `<p style="margin: 0.5rem 0 0 0; font-size: 0.9em; color: #aaa;">
+                    ${characterLevel < 20 ? `<p class="feature-note">
                         Additional features unlock as you gain levels (up to level 20).
                     </p>` : ''}
                 </div>`;

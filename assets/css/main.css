@@ -48,6 +48,570 @@ h2 {
 
 h3 {
     font-size: 1.5rem;
+
+/* Character Form Styles */
+.character-form * {
+    box-sizing: border-box;
+}
+
+.character-form .form-group {
+    margin-bottom: 1rem !important;
+}
+
+.character-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.2rem;
+    margin-bottom: 1.5rem;
+}
+
+.character-form .character-section {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border-radius: 8px !important;
+    padding: 1.2rem !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    margin-bottom: 0 !important;
+}
+
+.character-form .character-section h4 {
+    margin: 0 0 1rem 0 !important;
+    color: var(--accent-color) !important;
+    font-size: 1rem !important;
+    font-weight: 600 !important;
+    padding-bottom: 0 !important;
+    border-bottom: none !important;
+}
+
+.character-form .form-row {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 0.8rem !important;
+    margin-bottom: 0.8rem !important;
+}
+
+.character-form .form-group {
+    margin-bottom: 0.8rem !important;
+}
+
+.character-form .form-group label {
+    margin-bottom: 0.3rem !important;
+    font-size: 0.9rem !important;
+    font-weight: 500 !important;
+}
+
+.character-form input,
+.character-form select,
+.character-form textarea {
+    padding: 0.6rem !important;
+    font-size: 0.9rem !important;
+    margin-bottom: 0 !important;
+}
+
+.ability-scores {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.8rem;
+    margin-bottom: 1rem;
+}
+
+.ability-score {
+    text-align: center;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 6px;
+    padding: 0.8rem;
+}
+
+.ability-score label {
+    display: block;
+    margin-bottom: 0.4rem !important;
+    font-weight: 600 !important;
+    font-size: 0.8rem !important;
+    text-transform: uppercase;
+}
+
+.ability-score input {
+    width: 50px !important;
+    height: 50px !important;
+    text-align: center;
+    font-size: 1.1rem !important;
+    font-weight: bold;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+    color: var(--text-primary);
+    margin-bottom: 0.4rem !important;
+    padding: 0 !important;
+}
+
+.ability-modifier {
+    background: var(--accent-color);
+    color: var(--surface-color);
+    padding: 0.2rem 0.5rem;
+    border-radius: 3px;
+    font-weight: bold;
+    font-size: 0.8rem;
+    display: inline-block;
+}
+
+.skills-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.35rem 0.65rem;
+    margin-bottom: 0.65rem;
+}
+
+.saving-throws-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.35rem 0.65rem;
+    margin-bottom: 0.65rem;
+}
+
+.skill-item, .save-item {
+    display: flex;
+    align-items: center;
+    padding: 0.35rem 0.55rem;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    transition: all 0.2s ease;
+    font-size: 0.85rem;
+    line-height: 1.2;
+}
+
+.skill-item:hover, .save-item:hover {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.25);
+}
+
+.skill-item input, .save-item input {
+    margin-right: 0.5rem !important;
+    margin-left: 0 !important;
+    margin-bottom: 0 !important;
+    flex-shrink: 0;
+    width: auto !important;
+    height: auto !important;
+    padding: 0 !important;
+    transform: scale(1);
+}
+
+.skill-item label, .save-item label {
+    margin: 0 !important;
+    cursor: pointer;
+    font-size: 0.85rem !important;
+    line-height: 1.2;
+    font-weight: 500 !important;
+    color: var(--text-primary);
+}
+
+.form-actions {
+    text-align: center;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    margin-top: 1.5rem;
+}
+
+.form-actions .btn {
+    margin: 0 0.5rem;
+}
+
+/* Force consistent modal sizing */
+#character-creation-modal .modal-content,
+#character-sheet-modal .modal-content {
+    max-width: 1200px !important;
+    width: 95% !important;
+    max-height: 95vh !important;
+}
+
+#character-creation-modal .modal-body,
+#character-sheet-modal .modal-body {
+    overflow-y: auto !important;
+    max-height: calc(95vh - 80px) !important;
+    padding: 1.5rem !important;
+}
+
+@media (max-width: 768px) {
+    .character-form-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .character-form .form-row {
+        grid-template-columns: 1fr !important;
+    }
+    
+    .ability-scores {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .skills-grid {
+        grid-template-columns: repeat(1, minmax(0, 1fr));
+    }
+    
+    .saving-throws-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+/* Character Display Styles */
+.dice-roll-section {
+    margin-top: 1rem;
+    text-align: center;
+}
+
+.character-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.stat-card {
+    text-align: center;
+    padding: 0.5rem;
+    background-color: rgba(74, 85, 104, 0.5);
+    border-radius: 4px;
+}
+
+.stat-label {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.25rem;
+}
+
+.stat-value {
+    font-size: 1.4rem;
+    font-weight: bold;
+    color: var(--text-primary);
+}
+
+.ability-label {
+    font-weight: bold;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    margin-bottom: 0.25rem;
+}
+
+.ability-value {
+    font-size: 1.2rem;
+    color: var(--text-primary);
+}
+
+.equipment-text, .features-text {
+    white-space: pre-wrap;
+    line-height: 1.5;
+    color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.05);
+    padding: 0.8rem;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Additional Modal and Display Styles */
+.hidden {
+    display: none !important;
+}
+
+.my-characters-modal-content {
+    max-width: 900px;
+    height: 80vh;
+}
+
+.character-edit-modal-content {
+    max-width: 1200px !important;
+    width: 95% !important;
+    max-height: 95vh !important;
+    margin: auto;
+}
+
+.character-edit-modal-body {
+    overflow-y: auto !important;
+    max-height: calc(95vh - 80px) !important;
+    padding: 1.5rem;
+}
+
+.character-details-grid {
+    margin-top: 1rem;
+}
+
+.character-skills-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.character-skill-row {
+    display: flex;
+    align-items: center;
+    padding: 0.25rem;
+}
+
+.skill-checkbox, .save-checkbox {
+    margin-right: 0.5rem;
+    flex-shrink: 0;
+}
+
+.skill-label, .save-label {
+    flex: 1;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+.skill-modifier, .save-modifier {
+    font-weight: bold;
+    min-width: 2rem;
+    text-align: right;
+}
+
+.character-saves-section {
+    margin-top: 1rem;
+}
+
+.character-saves-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+}
+
+.character-save-row {
+    display: flex;
+    align-items: center;
+    padding: 0.25rem;
+}
+
+/* Additional Component Styles */
+.join-code-input {
+    text-transform: uppercase;
+}
+
+.initiative-modal-content {
+    max-width: 600px;
+}
+
+/* Browse Content Modal Styles */
+.browse-content-modal {
+    max-width: 800px;
+    height: 80vh;
+}
+
+.browse-content-body {
+    display: flex;
+    height: calc(80vh - 120px);
+}
+
+.browse-content-sidebar {
+    width: 300px;
+    padding-right: 1rem;
+    border-right: 1px solid var(--border-color);
+}
+
+.browse-content-list {
+    max-height: calc(100% - 60px);
+    overflow-y: auto;
+}
+
+.browse-content-details {
+    flex: 1;
+    padding-left: 1rem;
+    overflow-y: auto;
+}
+
+.content-item {
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.content-item.active {
+    background-color: var(--accent-color);
+    color: white;
+}
+
+.content-item:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.spell-details-section {
+    margin-top: 1rem;
+    padding: 1rem;
+    background-color: var(--surface-color);
+    border-radius: 4px;
+}
+
+/* Monster Browse Styles */
+.monster-browse-modal {
+    max-width: 800px;
+    height: 80vh;
+}
+
+.monster-browse-body {
+    display: flex;
+    height: calc(80vh - 120px);
+}
+
+.monster-browse-sidebar {
+    width: 300px;
+    padding-right: 1rem;
+    border-right: 1px solid var(--border-color);
+}
+
+.monster-browse-list {
+    max-height: calc(100% - 60px);
+    overflow-y: auto;
+}
+
+.monster-browse-details {
+    flex: 1;
+    padding-left: 1rem;
+    overflow-y: auto;
+}
+
+.monster-item {
+    padding: 0.5rem;
+    margin-bottom: 0.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.monster-stat-block {
+    margin-top: 1rem;
+}
+
+/* D&D Content Styling */
+.spell-info-box, .monster-info-box {
+    background-color: rgba(74, 85, 104, 0.3);
+    padding: 1rem;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+}
+
+.spell-section-header, .monster-section-header {
+    color: var(--accent-color);
+    margin-bottom: 0.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.ability-scores-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+    text-align: center;
+}
+
+.ability-item {
+    margin-bottom: 1rem;
+}
+
+.ability-name {
+    color: var(--accent-color);
+    margin-bottom: 0.25rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+
+.legendary-action-item {
+    margin-bottom: 0.5rem;
+}
+
+/* D&D Browse Modal Styles */
+.dnd-browse-modal {
+    max-width: 1000px;
+    height: 80vh;
+}
+
+.dnd-browse-body {
+    display: flex;
+    height: calc(80vh - 120px);
+}
+
+.dnd-browse-sidebar {
+    width: 280px;
+    padding-right: 1rem;
+    border-right: 1px solid var(--border-color);
+}
+
+.dnd-browse-list {
+    max-height: calc(100% - 60px);
+    overflow-y: auto;
+}
+
+.dnd-browse-details {
+    flex: 1;
+    padding-left: 1rem;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+/* Modal Size Classes */
+.modal-sm {
+    max-width: 400px;
+}
+
+.modal-md {
+    max-width: 600px;
+}
+
+.modal-lg {
+    max-width: 800px;
+}
+
+.modal-xl {
+    max-width: 1200px;
+}
+
+.modal-browse {
+    max-width: 1000px;
+    height: 80vh;
+}
+
+.modal-browse .modal-body {
+    display: flex;
+    height: calc(80vh - 120px);
+}
+
+/* Loading State */
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+    position: relative;
+}
+
+.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid transparent;
+    border-top: 2px solid var(--accent-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Form Error States */
+.error {
+    border-color: var(--danger-color) !important;
+    box-shadow: 0 0 0 2px rgba(229, 62, 62, 0.2);
+}
+
+.error-message {
+    color: var(--danger-color);
+    font-size: 0.8rem;
+    margin-top: 0.25rem;
+}
     font-weight: 600;
 }
 
@@ -451,6 +1015,193 @@ input:focus, select:focus, textarea:focus {
         opacity: 1;
         transform: translateY(0);
     }
+}
+
+/* Content Browser Layouts */
+.content-modal .modal-content {
+    max-width: 1000px;
+    height: 80vh;
+}
+
+.content-modal .modal-body {
+    display: flex;
+    height: calc(80vh - 120px);
+}
+
+.content-search {
+    width: 280px;
+    padding-right: 1rem;
+    border-right: 1px solid var(--border-color);
+}
+
+.content-list {
+    max-height: calc(100% - 60px);
+    overflow-y: auto;
+}
+
+.content-details {
+    flex: 1;
+    padding-left: 1rem;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.content-item {
+    padding: 0.5rem;
+    margin-bottom: 0.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.content-item:hover {
+    background-color: rgba(74, 85, 104, 0.3);
+}
+
+/* D&D Content Styling */
+.stat-block {
+    background-color: rgba(74, 85, 104, 0.3);
+    padding: 1rem;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+}
+
+.stat-block-title {
+    color: var(--accent-color);
+    margin-bottom: 0.5rem;
+}
+
+.ability-scores-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+    text-align: center;
+}
+
+.legendary-action {
+    margin-bottom: 0.5rem;
+}
+
+.legendary-action-title {
+    color: var(--accent-color);
+    margin-bottom: 0.25rem;
+}
+
+.spell-content,
+.feature-content {
+    margin: 1rem 0;
+    padding: 1rem;
+    background-color: rgba(74, 85, 104, 0.3);
+    border-radius: 4px;
+}
+
+.feature-title {
+    color: var(--accent-color);
+    margin-bottom: 0.5rem;
+}
+
+.spell-details {
+    margin: 0.5rem 0;
+    padding: 1rem;
+    background-color: rgba(74, 85, 104, 0.3);
+    border-radius: 4px;
+}
+
+/* Class Features Styling */
+.class-features-container {
+    max-height: 300px;
+    overflow-y: auto;
+    margin: 0;
+}
+
+.class-feature-level {
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.level-title {
+    color: var(--accent-color);
+    margin: 0 0 0.5rem 0;
+}
+
+.feature-list {
+    margin: 0;
+    padding-left: 1.2rem;
+    list-style-type: disc;
+}
+
+.feature-item {
+    margin: 0.25rem 0;
+    line-height: 1.4;
+}
+
+.feature-placeholder {
+    padding: 1rem;
+    background-color: rgba(74, 85, 104, 0.3);
+    border-radius: 4px;
+    text-align: center;
+}
+
+.feature-error {
+    margin: 0;
+    color: #ff6b6b;
+}
+
+.feature-error-detail {
+    color: #aaa;
+}
+
+.feature-info {
+    margin: 0;
+    color: #ccc;
+    font-style: italic;
+}
+
+.feature-note {
+    margin: 0.5rem 0 0 0;
+    font-size: 0.9em;
+    color: #aaa;
+}
+
+.no-features {
+    margin: 0;
+}
+
+/* Equipment Selection Styling */
+.equipment-selection {
+    margin-top: 0.5rem;
+    padding-left: 1rem;
+}
+
+/* Proficiency Selection Styling */
+.proficiency-label {
+    display: flex;
+    align-items: center;
+    margin: 0.2rem 0;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.proficiency-checkbox {
+    margin: 0 0.4rem 0 0;
+    flex-shrink: 0;
+    width: 16px;
+    height: 16px;
+}
+
+.proficiency-text {
+    line-height: 1.2;
+}
+
+.selection-count {
+    font-size: 0.9em;
+    color: var(--accent-color);
+    margin-top: 0.5rem;
+}
+
+.spell-list {
+    margin: 0.5rem 0;
 }
 
 /* Scrollbar */

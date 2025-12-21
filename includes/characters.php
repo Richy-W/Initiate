@@ -2,102 +2,33 @@
 // Database config and auth should already be loaded by calling script
 
 function createCharacter($campaign_id, $user_id, $character_data) {
-    global $pdo;
-    
     // Check if this is an NPC being created by GM
     $is_npc = (bool)($character_data['is_npc'] ?? false);
     
-    // Validate required fields
-    $name = sanitizeInput($character_data['name'] ?? '');
-    if (strlen($name) < 1 || strlen($name) > 100) {
-        return ['success' => false, 'message' => 'Character name must be between 1 and 100 characters.'];
-    }
-    
-    // Validate that user is a member of the campaign
-    $stmt = $pdo->prepare("SELECT id, game_master_id FROM campaigns WHERE id = ?");
-    $stmt->execute([$campaign_id]);
-    $campaign = $stmt->fetch();
-    
-    if (!$campaign) {
-        return ['success' => false, 'message' => 'Campaign not found.'];
-    }
-    
-    $is_gm = $campaign['game_master_id'] == $user_id;
-    
     // Only GMs can create NPCs
-    if ($is_npc && !$is_gm) {
-        return ['success' => false, 'message' => 'Only Game Masters can create NPCs.'];
-    }
-    
-    // Validate campaign membership for non-NPCs
-    if (!$is_npc) {
-        $stmt = $pdo->prepare("SELECT id FROM campaign_members WHERE campaign_id = ? AND user_id = ? AND is_active = TRUE");
-        $stmt->execute([$campaign_id, $user_id]);
-        if (!$stmt->fetch()) {
-            return ['success' => false, 'message' => 'You are not a member of this campaign.'];
+    if ($is_npc) {
+        global $pdo;
+        $stmt = $pdo->prepare("SELECT game_master_id FROM campaigns WHERE id = ?");
+        $stmt->execute([$campaign_id]);
+        $campaign = $stmt->fetch();
+        
+        if (!$campaign || $campaign['game_master_id'] != $user_id) {
+            return ['success' => false, 'message' => 'Only Game Masters can create NPCs.'];
         }
     }
     
-    try {
-        // Validate stats (must be between 1 and 30)
-        $stats = ['strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma'];
-        foreach ($stats as $stat) {
-            $value = (int)($character_data[$stat] ?? 10);
-            if ($value < 1 || $value > 30) {
-                return ['success' => false, 'message' => ucfirst($stat) . ' must be between 1 and 30.'];
-            }
-            $character_data[$stat] = $value;
-        }
-        
-        // Set default values
-        $character_data['race'] = sanitizeInput($character_data['race'] ?? '');
-        $character_data['class'] = sanitizeInput($character_data['class'] ?? '');
-        $character_data['level'] = max(1, (int)($character_data['level'] ?? 1));
-        $character_data['max_hit_points'] = max(1, (int)($character_data['max_hit_points'] ?? 1));
-        $character_data['current_hit_points'] = min($character_data['max_hit_points'], (int)($character_data['current_hit_points'] ?? $character_data['max_hit_points']));
-        $character_data['armor_class'] = max(1, (int)($character_data['armor_class'] ?? 10));
-        $character_data['speed'] = max(0, (int)($character_data['speed'] ?? 30));
-        
-        // Calculate initiative bonus (dexterity modifier)
-        $dex_modifier = floor(($character_data['dexterity'] - 10) / 2);
-        $character_data['initiative_bonus'] = $dex_modifier + (int)($character_data['initiative_bonus_extra'] ?? 0);
-        
-        // Store additional character data as JSON
-        $additional_data = [
-            'skills' => $character_data['skills'] ?? [],
-            'equipment' => $character_data['equipment'] ?? [],
-            'spells' => $character_data['spells'] ?? [],
-            'features' => $character_data['features'] ?? [],
-            'background' => sanitizeInput($character_data['background'] ?? ''),
-            'notes' => sanitizeInput($character_data['notes'] ?? '')
-        ];
-        
-        $stmt = $pdo->prepare("
-            INSERT INTO characters (
-                campaign_id, user_id, is_npc, name, race, class, level,
-                strength, dexterity, constitution, intelligence, wisdom, charisma,
-                max_hit_points, current_hit_points, armor_class, initiative_bonus, speed,
-                character_data
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ");
-        
-        $stmt->execute([
-            $campaign_id, $is_npc ? null : $user_id, $is_npc, $name, $character_data['race'], $character_data['class'], $character_data['level'],
-            $character_data['strength'], $character_data['dexterity'], $character_data['constitution'], 
-            $character_data['intelligence'], $character_data['wisdom'], $character_data['charisma'],
-            $character_data['max_hit_points'], $character_data['current_hit_points'], 
-            $character_data['armor_class'], $character_data['initiative_bonus'], $character_data['speed'],
-            json_encode($additional_data)
-        ]);
-        
-        $character_id = $pdo->lastInsertId();
-        
-        return ['success' => true, 'message' => 'Character created successfully.', 'character_id' => $character_id];
-        
-    } catch (PDOException $e) {
-        error_log("Error creating character: " . $e->getMessage());
-        return ['success' => false, 'message' => 'An error occurred while creating the character.'];
+    // Normalize the character data to match standalone format
+    if (isset($character_data['class'])) {
+        $character_data['char_class'] = $character_data['class'];
+        unset($character_data['class']);
     }
+    
+    // Set default values for campaign characters
+    $character_data['hit_points'] = $character_data['max_hit_points'] ?? $character_data['hit_points'] ?? 8;
+    $character_data['initiative_modifier'] = $character_data['initiative_bonus'] ?? $character_data['initiative_modifier'] ?? 0;
+    
+    // Use the unified standalone character creation with campaign_id
+    return createStandaloneCharacter($user_id, $character_data, $campaign_id);
 }
 
 function updateCharacter($character_id, $user_id, $character_data, $is_gm = false) {
@@ -368,7 +299,7 @@ function getCampaignCharacters($campaign_id, $user_id) {
     }
 }
 
-function createStandaloneCharacter($user_id, $character_data) {
+function createStandaloneCharacter($user_id, $character_data, $campaign_id = null) {
     global $pdo;
     
     // Validate required fields
@@ -377,41 +308,73 @@ function createStandaloneCharacter($user_id, $character_data) {
         return ['success' => false, 'message' => 'Character name must be between 1 and 100 characters.'];
     }
     
+    // If campaign_id is provided, validate campaign membership
+    if ($campaign_id) {
+        $stmt = $pdo->prepare("SELECT id, game_master_id FROM campaigns WHERE id = ?");
+        $stmt->execute([$campaign_id]);
+        $campaign = $stmt->fetch();
+        
+        if (!$campaign) {
+            return ['success' => false, 'message' => 'Campaign not found.'];
+        }
+        
+        $is_gm = $campaign['game_master_id'] == $user_id;
+        
+        // Validate campaign membership for non-NPCs
+        if (!($character_data['is_npc'] ?? false)) {
+            $stmt = $pdo->prepare("SELECT id FROM campaign_members WHERE campaign_id = ? AND user_id = ? AND is_active = TRUE");
+            $stmt->execute([$campaign_id, $user_id]);
+            if (!$stmt->fetch()) {
+                return ['success' => false, 'message' => 'You are not a member of this campaign.'];
+            }
+        }
+    }
+    
     try {
-        // Validate stats (must be between 3 and 20)
+        // Validate stats (must be between 3 and 20 for standalone, 1 and 30 for campaign)
+        $min_stat = $campaign_id ? 1 : 3;
+        $max_stat = $campaign_id ? 30 : 20;
         $stats = ['strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma'];
         foreach ($stats as $stat) {
             $value = (int)($character_data[$stat] ?? 10);
-            if ($value < 3 || $value > 20) {
-                return ['success' => false, 'message' => ucfirst($stat) . ' must be between 3 and 20.'];
+            if ($value < $min_stat || $value > $max_stat) {
+                return ['success' => false, 'message' => ucfirst($stat) . ' must be between ' . $min_stat . ' and ' . $max_stat . '.'];
             }
             $character_data[$stat] = $value;
         }
         
         // Prepare additional data
         $additional_data = [
-            'equipment' => sanitizeInput($character_data['equipment'] ?? ''),
+            'equipment' => $character_data['equipment'] ?? [],
             'features_traits' => sanitizeInput($character_data['features_traits'] ?? ''),
             'backstory' => sanitizeInput($character_data['backstory'] ?? ''),
-            'skills' => $character_data['skills'] ?? []
+            'skills' => $character_data['skills'] ?? [],
+            'saving_throws' => $character_data['saving_throws'] ?? [],
+            'spells' => $character_data['spells'] ?? [],
+            'features' => $character_data['features'] ?? [],
+            'notes' => sanitizeInput($character_data['notes'] ?? '')
         ];
+        
+        // Determine if this is an NPC
+        $is_npc = (bool)($character_data['is_npc'] ?? false);
         
         $stmt = $pdo->prepare("
             INSERT INTO characters (
-                user_id, name, race, char_class, level, background, alignment,
+                campaign_id, user_id, name, race, char_class, level, background, alignment,
                 strength, dexterity, constitution, intelligence, wisdom, charisma,
                 armor_class, hit_points, speed, proficiency_bonus, initiative_modifier,
                 character_data, is_npc
             ) VALUES (
-                ?, ?, ?, ?, ?, ?, ?,
+                ?, ?, ?, ?, ?, ?, ?, ?,
                 ?, ?, ?, ?, ?, ?,
                 ?, ?, ?, ?, ?,
-                ?, FALSE
+                ?, ?
             )
         ");
         
         $result = $stmt->execute([
-            $user_id,
+            $campaign_id, // Can be null for standalone characters
+            $is_npc ? null : $user_id, // NPCs don't have a user_id owner
             $name,
             sanitizeInput($character_data['race'] ?? ''),
             sanitizeInput($character_data['char_class'] ?? ''),
@@ -429,7 +392,8 @@ function createStandaloneCharacter($user_id, $character_data) {
             max(0, (int)($character_data['speed'] ?? 30)),
             max(2, min(6, (int)($character_data['proficiency_bonus'] ?? 2))),
             (int)($character_data['initiative_modifier'] ?? 0),
-            json_encode($additional_data)
+            json_encode($additional_data),
+            $is_npc
         ]);
         
         if ($result) {

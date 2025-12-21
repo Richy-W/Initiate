@@ -109,6 +109,35 @@ A comprehensive D&D 5e initiative tracker and character management system built 
 
 ## Key JavaScript Classes
 
+### `ModalFactory` (utils.js)
+- **Purpose**: Standardized modal creation and management across the application
+- **Key Methods**:
+  - `create(config)` - Creates modals with consistent structure and sizing
+  - `show(modalOrId)` - Shows modal with focus management
+  - `close(modalOrId)` - Closes specific modal
+  - `closeAll()` - Closes all open modals
+- **Configuration Options**: id, title, content, buttons, size, customClasses
+
+### `APIService` (utils.js) 
+- **Purpose**: Centralized API request handling with error management and loading states
+- **Key Methods**:
+  - `request(endpoint, options)` - Standardized API calls with automatic error handling
+  - `showLoading(target)` - Display loading states on UI elements
+  - `hideLoading(target)` - Remove loading states
+
+### `FormUtils` (utils.js)
+- **Purpose**: Reusable form validation and error display patterns
+- **Key Methods**:
+  - `validate(form, rules)` - Client-side form validation with configurable rules
+  - `showErrors(form, errors)` - Display validation errors with consistent styling
+
+### `DOMUtils` (utils.js)
+- **Purpose**: Safe DOM manipulation and element creation utilities
+- **Key Methods**:
+  - `createElement(tag, attributes, children)` - Programmatic element creation
+  - `safeQuery(selector, context)` - Error-safe querySelector
+  - `safeQueryAll(selector, context)` - Error-safe querySelectorAll
+
 ### `DnDContent` (dnd-content.js)
 - **Purpose**: Handles D&D 5e SRD API integration and content browsers
 - **Key Methods**:
@@ -169,6 +198,58 @@ A comprehensive D&D 5e initiative tracker and character management system built 
 - **Professional Styling**: Matches D&D official presentation style
 
 ## Clean Coding Standards
+
+### CSS and Styling Standards
+- **NO INLINE STYLES**: Never use inline CSS (`style=""` attributes) in HTML or JavaScript
+- All styling must be placed in external CSS files (main.css, dashboard.css, etc.)
+- Use semantic CSS class names that describe purpose, not appearance
+- Maintain consistency with existing CSS variables and design patterns
+- Group related styles together in CSS files with clear comments
+- Prefer CSS classes over JavaScript style manipulation (`element.style`)
+
+### Separation of Concerns
+- **HTML**: Structure and content only
+- **CSS**: All presentation and styling
+- **JavaScript**: Behavior and interactivity only
+- Keep presentation logic separate from business logic in PHP
+
+### Security Standards (Production Ready)
+- **Input Validation**: All user inputs must be validated and sanitized
+- **SQL Injection Prevention**: Use prepared statements exclusively, never string concatenation
+- **XSS Protection**: Escape all output, use CSP headers
+- **CSRF Protection**: Implement and validate CSRF tokens on all state-changing operations  
+- **Authentication**: Secure session management, password hashing with password_hash()
+- **Authorization**: Proper access control checks on all sensitive operations
+- **Error Handling**: Never expose internal errors to users, log securely
+- **File Uploads**: Validate file types, scan for malware, restrict execution
+- **HTTPS Only**: Force SSL/TLS in production environments
+- **Security Headers**: Implement HSTS, X-Frame-Options, X-Content-Type-Options
+
+### Code Quality Standards (Industry Standard)
+- **Error Handling**: Comprehensive try-catch blocks with proper logging
+- **Logging**: Structured logging for debugging and monitoring (not console.log in production)
+- **Performance**: Database queries optimized, API calls cached appropriately
+- **Testing**: Unit tests for critical functions, integration tests for APIs
+- **Documentation**: All public APIs and complex logic documented
+- **Code Reviews**: No direct pushes to main branch without review
+- **Dependencies**: Keep all dependencies updated, security vulnerability scanning
+- **Environment Configuration**: Separate configs for dev/staging/production
+- **Data Privacy**: GDPR/privacy compliance for user data handling
+- **Monitoring**: Application performance monitoring and alerting
+
+### Code Modularity and Reusability Standards
+- **Single Responsibility Principle**: Each function/class should have one clear purpose
+- **DRY Principle**: Don't repeat yourself - extract common code into reusable functions
+- **Modular Functions**: Break large functions into smaller, testable units (max 50 lines)
+- **Reusable Components**: Create utility functions for common operations (API calls, DOM manipulation, validation)
+- **Configuration Objects**: Use configuration objects instead of multiple parameters
+- **Factory Patterns**: Use factory functions for creating similar objects (modals, forms, components)
+- **Event Handler Abstraction**: Create reusable event handling patterns
+- **Data Transformation**: Separate data transformation logic from presentation logic
+- **API Abstraction**: Create service layers for external API interactions
+- **Common Utilities**: Extract shared functionality into utility modules (formatters, validators, helpers)
+- **Component Composition**: Build complex features from smaller, composable parts
+- **Dependency Injection**: Pass dependencies as parameters rather than hardcoding
 
 ### JavaScript Code Standards
 

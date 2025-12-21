@@ -21,6 +21,7 @@ class Initiate {
         this.user = null;
         this.csrfToken = null;
         this.pollingInterval = null;
+        this.archiveSearchTimeout = null;
         this.init();
     }
 
@@ -44,6 +45,11 @@ class Initiate {
             if (e.key === 'Escape') {
                 this.closeModals();
             }
+        });
+
+        // View Archives button
+        document.getElementById('view-archives-btn')?.addEventListener('click', () => {
+            this.showArchivesView();
         });
     }
 
@@ -110,7 +116,7 @@ class Initiate {
             });
             document.querySelector(`[data-campaign-id="${campaignId}"]`).classList.add('active');
 
-            // Load campaign details
+            // Load campaign details for active campaigns
             const response = await fetch(`api/campaigns.php?action=details&campaign_id=${campaignId}`);
             const data = await response.json();
             
@@ -125,6 +131,76 @@ class Initiate {
             console.error('Error selecting campaign:', error);
             this.showAlert('Error loading campaign', 'error');
         }
+    }
+
+    async showArchivedCampaignCharacters(campaignId) {
+        try {
+            const response = await fetch(`api/campaigns.php?action=archived_characters&campaign_id=${campaignId}`);
+            const data = await response.json();
+            
+            if (data.success) {
+                this.renderArchivedCharactersInline(data, campaignId);
+            } else {
+                this.showAlert('Error loading archived campaign: ' + data.message, 'error');
+            }
+        } catch (error) {
+            console.error('Error loading archived campaign characters:', error);
+            this.showAlert('Error loading archived campaign', 'error');
+        }
+    }
+
+    renderArchivedCharactersInline(data, campaignId) {
+        // Find or create a characters section within the archives view
+        let charactersSection = document.getElementById('archived-characters-section');
+        
+        if (!charactersSection) {
+            charactersSection = document.createElement('div');
+            charactersSection.id = 'archived-characters-section';
+            charactersSection.className = 'archived-characters-section';
+            document.querySelector('.archives-view').appendChild(charactersSection);
+        }
+        
+        charactersSection.innerHTML = `
+            <div class="section-header">
+                <h3>Characters from "${this.escapeHtml(data.campaign_name)}"</h3>
+                <p class="text-secondary">${data.characters.length} character(s) available for import</p>
+            </div>
+            
+            <div class="archived-character-grid">
+                ${this.renderArchivedCharacters(data.characters, campaignId)}
+            </div>
+        `;
+        
+        // Scroll to the characters section
+        charactersSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    renderArchivedCharacters(characters, campaignId) {
+        if (characters.length === 0) {
+            return '<p class="text-secondary">No characters found in this campaign.</p>';
+        }
+
+        return characters.map(character => `
+            <div class="archived-character-card" data-character-id="${character.id}">
+                <div class="character-header">
+                    <h4>${this.escapeHtml(character.name)}</h4>
+                    <span class="character-class">${this.escapeHtml(character.class || 'Unknown')} ${character.level || 1}</span>
+                </div>
+                <div class="character-details">
+                    <p><strong>Race:</strong> ${this.escapeHtml(character.race || 'Unknown')}</p>
+                    <p><strong>Background:</strong> ${this.escapeHtml(character.background || 'None')}</p>
+                    <p><strong>Alignment:</strong> ${this.escapeHtml(character.alignment || 'None')}</p>
+                </div>
+                <div class="character-actions">
+                    <button class="btn btn-primary btn-sm" onclick="initiate.importCharacterFromArchive(${character.id}, ${campaignId})">
+                        Import to Active Campaign
+                    </button>
+                    <button class="btn btn-secondary btn-sm" onclick="initiate.viewArchivedCharacter(${character.id})">
+                        View Details
+                    </button>
+                </div>
+            </div>
+        `).join('');
     }
 
     renderCampaignContent(data) {
@@ -157,14 +233,21 @@ class Initiate {
                     </div>
                     
                     <div class="campaign-actions">
-                        <button class="btn btn-accent" onclick="initiate.createCharacter()">Create Character</button>
+                        <div class="primary-actions">
+                            <button class="btn btn-accent" onclick="initiate.createCharacter()">Create Character</button>
+                            ${data.is_gm ? `
+                                <button class="btn btn-secondary" onclick="initiate.createNPC()">Create NPC</button>
+                                <button class="btn btn-primary" onclick="initiate.startInitiative()">Start Initiative</button>
+                                <button class="btn btn-warning" onclick="initiate.endInitiative()">End Initiative</button>
+                            ` : `
+                                <button class="btn btn-danger" onclick="initiate.leaveCampaign()">Leave Campaign</button>
+                            `}
+                        </div>
                         ${data.is_gm ? `
-                            <button class="btn btn-secondary" onclick="initiate.createNPC()">Create NPC</button>
-                            <button class="btn btn-primary" onclick="initiate.startInitiative()">Start Initiative</button>
-                            <button class="btn btn-warning" onclick="initiate.endInitiative()">End Initiative</button>
-                        ` : `
-                            <button class="btn btn-danger" onclick="initiate.leaveCampaign()">Leave Campaign</button>
-                        `}
+                            <div class="danger-actions">
+                                <button class="btn btn-danger" onclick="initiate.endCampaign()">⚠️ End Campaign</button>
+                            </div>
+                        ` : ''}
                     </div>
                 </div>
                 
@@ -222,6 +305,152 @@ class Initiate {
                 </div>
             </div>
         `).join('');
+    }
+
+    showArchivesView() {
+        // Clear any selected campaign
+        this.currentCampaign = null;
+        document.querySelectorAll('.campaign-item').forEach(item => {
+            item.classList.remove('active');
+        });
+        
+        this.renderArchivesView();
+        this.loadArchivedCampaigns();
+    }
+
+    renderArchivesView() {
+        const mainContent = document.querySelector('.dashboard-main');
+        
+        mainContent.innerHTML = `
+            <div class="archives-view">
+                <div class="archives-header">
+                    <h2>📁 Campaign Archives</h2>
+                    <p>Browse your completed campaigns and import characters for reuse in new adventures.</p>
+                </div>
+                
+                <div class="archives-controls">
+                    <div class="archives-search">
+                        <input type="text" id="archives-search" placeholder="Search archived campaigns..." />
+                    </div>
+                    <button class="btn btn-secondary" onclick="initiate.loadCampaigns()">
+                        ← Back to Active Campaigns
+                    </button>
+                </div>
+                
+                <div id="archived-campaigns-container">
+                    <div class="loading">Loading archived campaigns...</div>
+                </div>
+            </div>
+        `;
+        
+        // Bind search event
+        document.getElementById('archives-search').addEventListener('input', (e) => {
+            clearTimeout(this.archiveSearchTimeout);
+            this.archiveSearchTimeout = setTimeout(() => {
+                this.loadArchivedCampaigns(e.target.value);
+            }, 300);
+        });
+    }
+
+    async loadArchivedCampaigns(searchTerm = '') {
+        try {
+            const url = new URL('api/campaigns.php', window.location.origin);
+            url.searchParams.set('action', 'list_archived');
+            if (searchTerm) {
+                url.searchParams.set('search', searchTerm);
+            }
+
+            const response = await fetch(url);
+            const data = await response.json();
+            
+            if (data.success) {
+                this.renderArchivedCampaignsList(data.campaigns);
+            } else {
+                console.error('Error loading archived campaigns:', data.message);
+            }
+        } catch (error) {
+            console.error('Error loading archived campaigns:', error);
+        }
+    }
+
+    renderArchivedCampaignsList(campaigns) {
+        const container = document.getElementById('archived-campaigns-container');
+        
+        if (campaigns.length === 0) {
+            container.innerHTML = `
+                <div class="no-archives">
+                    <h3>No archived campaigns found</h3>
+                    <p>Campaigns that have been ended will appear here.</p>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = `
+            <div class="archived-campaigns-grid">
+                ${campaigns.map(campaign => `
+                    <div class="archived-campaign-card" data-campaign-id="${campaign.id}" onclick="initiate.selectArchivedCampaign(${campaign.id})">
+                        <h3>${this.escapeHtml(campaign.name)}</h3>
+                        <p>${this.escapeHtml(campaign.description || 'No description available')}</p>
+                        
+                        <div class="campaign-meta">
+                            <div class="meta-item">
+                                <strong>Role:</strong> ${campaign.role}
+                            </div>
+                            <div class="meta-item">
+                                <strong>GM:</strong> ${this.escapeHtml(campaign.gm_username)}
+                            </div>
+                            <div class="meta-item">
+                                <strong>Ended:</strong> ${this.formatDate(campaign.updated_at)}
+                            </div>
+                            <div class="meta-item">
+                                <strong>Duration:</strong> ${this.calculateCampaignDuration(campaign.created_at, campaign.updated_at)}
+                            </div>
+                        </div>
+                        
+                        <div class="character-count">
+                            📝 ${campaign.character_count || 0} characters available
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    }
+
+    calculateCampaignDuration(startDate, endDate) {
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        const diffTime = Math.abs(end - start);
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        
+        if (diffDays < 30) {
+            return `${diffDays} days`;
+        } else if (diffDays < 365) {
+            const months = Math.floor(diffDays / 30);
+            return `${months} month${months > 1 ? 's' : ''}`;
+        } else {
+            const years = Math.floor(diffDays / 365);
+            return `${years} year${years > 1 ? 's' : ''}`;
+        }
+    }
+
+    async selectArchivedCampaign(campaignId) {
+        // Remove selection from other cards
+        document.querySelectorAll('.archived-campaign-card').forEach(card => {
+            card.classList.remove('selected');
+        });
+        
+        // Select this card
+        document.querySelector(`[data-campaign-id="${campaignId}"]`).classList.add('selected');
+        
+        // Show characters for this campaign
+        this.showArchivedCampaignCharacters(campaignId);
+    }
+
+    searchArchivedCampaigns(searchTerm) {
+        if (this.isShowingArchives) {
+            this.loadArchivedCampaigns(searchTerm);
+        }
     }
 
     async loadInitiativeStatus(campaignId) {
@@ -349,21 +578,21 @@ class Initiate {
         modal.id = modalId;
         modal.className = 'modal';
         modal.innerHTML = `
-            <div class="modal-content" style="max-width: 800px; height: 80vh;">
+            <div class="modal-content content-modal">
                 <div class="modal-header">
                     <h3>Browse D&D ${contentType.charAt(0).toUpperCase() + contentType.slice(1)}</h3>
                     <button class="close">&times;</button>
                 </div>
-                <div class="modal-body" style="display: flex; height: calc(80vh - 120px);">
-                    <div style="width: 300px; padding-right: 1rem; border-right: 1px solid var(--border-color);">
+                <div class="modal-body">
+                    <div class="content-search">
                         <div class="form-group">
                             <input type="text" id="${contentType}-search" placeholder="Search ${contentType}..." class="form-control">
                         </div>
-                        <div id="${contentType}-list" style="max-height: calc(100% - 60px); overflow-y: auto;">
+                        <div id="${contentType}-list" class="content-list">
                             <p>Loading ${contentType}...</p>
                         </div>
                     </div>
-                    <div style="flex: 1; padding-left: 1rem; overflow-y: auto;">
+                    <div class="content-details">
                         <div id="${contentType}-details">
                             <p class="text-secondary">Select a ${fieldType} from the list to view details.</p>
                         </div>
@@ -443,7 +672,7 @@ class Initiate {
         }
 
         listContainer.innerHTML = items.map(item => `
-            <div class="content-item" data-index="${item.index}" style="padding: 0.75rem; margin-bottom: 0.5rem; border: 1px solid var(--border-color); border-radius: 4px; cursor: pointer;">
+            <div class="content-item" data-index="${item.index}">
                 <strong>${item.name}</strong>
             </div>
         `).join('');
@@ -453,11 +682,9 @@ class Initiate {
             itemElement.addEventListener('click', async () => {
                 // Highlight selected
                 listContainer.querySelectorAll('.content-item').forEach(i => {
-                    i.style.backgroundColor = '';
-                    i.style.color = '';
+                    i.classList.remove('active');
                 });
-                itemElement.style.backgroundColor = 'var(--accent-color)';
-                itemElement.style.color = 'white';
+                itemElement.classList.add('active');
 
                 const selectedItem = items[index];
                 
@@ -465,7 +692,7 @@ class Initiate {
                 detailsContainer.innerHTML = `
                     <div class="content-details">
                         <h4>${selectedItem.name}</h4>
-                        <div style="margin-top: 1rem; padding: 1rem; background-color: var(--surface-color); border-radius: 4px;">
+                        <div class="spell-details-section">
                             <p><strong>Click "Select This ${fieldType.charAt(0).toUpperCase() + fieldType.slice(1)}" to add this to your character.</strong></p>
                         </div>
                     </div>
@@ -485,21 +712,21 @@ class Initiate {
         const modal = document.createElement('div');
         modal.className = 'modal';
         modal.innerHTML = `
-            <div class="modal-content" style="max-width: 800px; height: 80vh;">
+            <div class="modal-content content-modal">
                 <div class="modal-header">
                     <h3>Import from Monster Manual</h3>
                     <button class="close">&times;</button>
                 </div>
-                <div class="modal-body" style="display: flex; height: calc(80vh - 120px);">
-                    <div style="width: 300px; padding-right: 1rem; border-right: 1px solid var(--border-color);">
+                <div class="modal-body">
+                    <div class="content-search">
                         <div class="form-group">
                             <input type="text" id="monster-search" placeholder="Search monsters..." class="form-control">
                         </div>
-                        <div id="monster-list" style="max-height: calc(100% - 60px); overflow-y: auto;">
+                        <div id="monster-list" class="content-list">
                             <!-- Monsters will be loaded here -->
                         </div>
                     </div>
-                    <div style="flex: 1; padding-left: 1rem; overflow-y: auto;">
+                    <div class="content-details">
                         <div id="monster-details">
                             <p class="text-secondary">Select a monster to view stats and import.</p>
                         </div>
@@ -567,7 +794,7 @@ class Initiate {
                 }
 
                 listContainer.innerHTML = monsters.map(monster => `
-                    <div class="content-item" data-index="${monster.index}" style="padding: 0.5rem; margin-bottom: 0.5rem; border: 1px solid var(--border-color); border-radius: 4px; cursor: pointer;">
+                    <div class="content-item monster-item" data-index="${monster.index}">
                         <strong>${monster.name}</strong>
                         ${monster.challenge_rating !== undefined ? `<br><small>CR ${monster.challenge_rating}</small>` : ''}
                     </div>
@@ -577,9 +804,8 @@ class Initiate {
                 listContainer.querySelectorAll('.content-item').forEach(item => {
                     item.addEventListener('click', async () => {
                         // Highlight selected
-                        listContainer.querySelectorAll('.content-item').forEach(i => i.style.backgroundColor = '');
-                        item.style.backgroundColor = 'var(--accent-color)';
-                        item.style.color = 'white';
+                        listContainer.querySelectorAll('.content-item').forEach(i => i.classList.remove('active'));
+                        item.classList.add('active');
 
                         // Load monster details
                         await this.loadMonsterDetails(item.dataset.index, detailsContainer);
@@ -605,7 +831,7 @@ class Initiate {
                 this.selectedMonsterModal.setSelected(monster);
                 
                 detailsContainer.innerHTML = dndContent.formatMonster(monster) + `
-                    <div style="margin-top: 1rem;">
+                    <div class="monster-stat-block">
                         <p><strong>This will import:</strong></p>
                         <ul>
                             <li>Name: ${monster.name}</li>

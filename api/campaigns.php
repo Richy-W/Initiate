@@ -57,6 +57,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $response = leaveCampaign($campaign_id, $user_id);
             break;
 
+        case 'end':
+            $campaign_id = (int)($input['campaign_id'] ?? 0);
+            $response = endCampaign($campaign_id, $user_id);
+            break;
+
         default:
             $response = ['success' => false, 'message' => 'Unknown action.'];
     }
@@ -69,9 +74,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $response = ['success' => true, 'campaigns' => $campaigns];
             break;
 
+        case 'list_archived':
+            $search_term = $_GET['search'] ?? '';
+            $campaigns = getUserArchivedCampaigns($user_id, $search_term);
+            $response = ['success' => true, 'campaigns' => $campaigns];
+            break;
+
         case 'details':
             $campaign_id = (int)($_GET['campaign_id'] ?? 0);
             $response = getCampaignDetails($campaign_id, $user_id);
+            break;
+
+        case 'archived_characters':
+            $campaign_id = (int)($_GET['campaign_id'] ?? 0);
+            $response = getArchivedCampaignCharacters($campaign_id, $user_id);
             break;
 
         default:

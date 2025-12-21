@@ -161,34 +161,37 @@ Object.assign(Initiate.prototype, {
         
         // Populate with campaign characters
         this.populateInitiativeModal();
-        this.showModal('add-initiative-modal');
+        ModalFactory.show('add-initiative-modal');
     },
 
     createAddToInitiativeModal() {
-        const modal = document.createElement('div');
-        modal.id = 'add-initiative-modal';
-        modal.className = 'modal';
-        modal.innerHTML = `
-            <div class="modal-content" style="max-width: 600px;">
-                <div class="modal-header">
-                    <h3>Add to Initiative</h3>
-                    <button class="close">&times;</button>
+        ModalFactory.create({
+            id: 'add-initiative-modal',
+            title: 'Add to Initiative',
+            size: 'large',
+            content: `
+                <div id="initiative-entries">
+                    <!-- Entries will be populated here -->
                 </div>
-                <div class="modal-body">
-                    <div id="initiative-entries">
-                        <!-- Entries will be populated here -->
-                    </div>
-                    
-                    <button type="button" class="btn btn-secondary" onclick="initiate.addInitiativeEntry()">Add Entry</button>
-                    
-                    <div class="form-group mt-3">
-                        <button type="button" class="btn btn-primary" onclick="initiate.submitInitiativeEntries()">Add to Initiative</button>
-                        <button type="button" class="btn btn-secondary" onclick="initiate.closeModals()">Cancel</button>
-                    </div>
-                </div>
-            </div>
-        `;
-        document.body.appendChild(modal);
+                
+                <button type="button" class="btn btn-secondary" onclick="initiate.addInitiativeEntry()">Add Entry</button>
+            `,
+            buttons: [
+                {
+                    text: 'Add to Initiative',
+                    class: 'btn btn-primary',
+                    action: 'submit',
+                    handler: () => initiate.submitInitiativeEntries()
+                },
+                {
+                    text: 'Cancel',
+                    class: 'btn btn-secondary',
+                    action: 'cancel',
+                    handler: () => ModalFactory.close('add-initiative-modal')
+                }
+            ],
+            customClasses: ['initiative-modal']
+        });
     },
 
     populateInitiativeModal() {

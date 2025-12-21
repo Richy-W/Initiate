@@ -54,6 +54,7 @@ $user = getCurrentUser();
             <div class="sidebar-buttons">
                 <button id="create-campaign-btn" class="btn btn-primary">Create New Campaign</button>
                 <button id="join-campaign-btn" class="btn btn-secondary">Join Campaign</button>
+                <button id="view-archives-btn" class="btn btn-outline">📁 View Archives</button>
             </div>
 
             <!-- D&D Quick Reference -->
@@ -77,7 +78,7 @@ $user = getCurrentUser();
             </div>
 
             <!-- Character Display Panel -->
-            <div id="character-display" class="character-display" style="display: none;">
+            <div id="character-display" class="character-display hidden">
                 <div class="character-header">
                     <h3>Active Character</h3>
                     <button id="hide-character-btn" class="btn btn-sm btn-secondary">Hide</button>
@@ -100,31 +101,33 @@ $user = getCurrentUser();
     <!-- Modals -->
     <div id="character-sheet-modal" class="modal">
         <div class="modal-content">
-            <span class="close">&times;</span>
-            <div id="character-sheet-content">
-                <!-- Character sheet will be loaded here -->
+            <div class="modal-header">
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div id="character-sheet-content">
+                    <!-- Character sheet will be loaded here -->
+                </div>
             </div>
         </div>
     </div>
 
     <!-- Character Creation Modal -->
     <div id="character-creation-modal" class="modal">
-        <div class="modal-content" style="max-width: 1000px; height: 90vh;">
+        <div class="modal-content">
             <div class="modal-header">
-                <h3>Create New Character</h3>
-                <span class="close">&times;</span>
+                <h2 class="modal-title">Create New Character</h2>
+                <button class="close">&times;</button>
             </div>
-            <div class="modal-body" style="overflow-y: auto; max-height: calc(90vh - 120px);">
-                <div id="character-creation-form">
-                    <!-- Character creation form will be loaded here -->
-                </div>
+            <div class="modal-body">
+                <!-- Character creation form will be loaded here -->
             </div>
         </div>
     </div>
 
     <!-- My Characters Modal -->
     <div id="my-characters-modal" class="modal">
-        <div class="modal-content" style="max-width: 900px; height: 80vh;">
+        <div class="modal-content my-characters-modal-content">
             <div class="modal-header">
                 <h3>My Characters</h3>
                 <span class="close">&times;</span>
@@ -140,12 +143,13 @@ $user = getCurrentUser();
     </div>
     </div>
 
+    <script src="assets/js/utils.js"></script>
     <script src="assets/js/main.js"></script>
     <script src="assets/js/dashboard.js"></script>
     <script src="assets/js/initiative.js"></script>
+    <script src="assets/js/character-management.js"></script>
     <script src="assets/js/character-sheet.js"></script>
     <script src="assets/js/dnd-content.js"></script>
-    <script src="assets/js/character-management.js"></script>
 </body>
 
 </html>

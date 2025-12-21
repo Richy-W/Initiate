@@ -36,6 +36,49 @@ Object.assign(Initiate.prototype, {
     },
 
     showCharacterSheet(character, forceEdit = false, isNPC = false) {
+        const campaignId = this.currentCampaign?.campaign?.id;
+        const containerId = 'character-sheet-modal';
+        
+        // Ensure modal exists
+        if (!document.getElementById(containerId)) {
+            this.createCharacterSheetModal();
+        }
+        
+        // Always try to use the unified form first
+        if (window.characterManager && typeof window.characterManager.showCharacterForm === 'function') {
+            try {
+                // Use the unified form
+                window.characterManager.showCharacterForm(character, campaignId, isNPC, containerId);
+                
+                // Override the form submission to use campaign character saving
+                setTimeout(() => {
+                    const form = document.getElementById('character-form');
+                    if (form) {
+                        // Remove any existing listeners first
+                        const newForm = form.cloneNode(true);
+                        form.parentNode.replaceChild(newForm, form);
+                        
+                        // Add the campaign-specific submit handler
+                        newForm.addEventListener('submit', (e) => {
+                            e.preventDefault();
+                            this.saveCharacter(new FormData(e.target), character !== null);
+                        });
+                    }
+                }, 100);
+                
+                return; // Exit early if unified form is used successfully
+            } catch (error) {
+                console.error('Error using unified character form:', error);
+            }
+        } else {
+            console.warn('CharacterManager not available or missing showCharacterForm method');
+        }
+        
+        // Fallback to old form
+        this.showCharacterSheetOld(character, forceEdit, isNPC);
+    },
+
+    showCharacterSheetOld(character, forceEdit = false, isNPC = false) {
         // Create modal if it doesn't exist
         if (!document.getElementById('character-sheet-modal')) {
             this.createCharacterSheetModal();
@@ -166,7 +209,7 @@ Object.assign(Initiate.prototype, {
                             ${this.renderSkills(character, canEdit)}
                         </div>
                         
-                        <div class="grid-2" style="margin-top: 1rem;">
+                        <div class="grid-2 character-details-grid">
                             <div class="form-group">
                                 <label for="char-languages">Languages</label>
                                 <textarea id="char-languages" name="languages" rows="2" 
@@ -263,11 +306,12 @@ Object.assign(Initiate.prototype, {
         modal.id = 'character-sheet-modal';
         modal.className = 'modal';
         modal.innerHTML = `
-            <div class="modal-content" style="max-width: 900px; max-height: 90vh; overflow-y: auto;">
+            <div class="modal-content character-edit-modal-content">
                 <div class="modal-header">
+                    <h2 class="modal-title">Character Sheet</h2>
                     <button class="close">&times;</button>
                 </div>
-                <div class="modal-body">
+                <div class="modal-body character-edit-modal-body">
                     <div id="character-sheet-content">
                         <!-- Character sheet content will be loaded here -->
                     </div>
@@ -323,7 +367,7 @@ Object.assign(Initiate.prototype, {
         const skillProficiencies = character?.additional_data?.skill_proficiencies || [];
         
         return `
-            <div class="skills-container" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; margin-bottom: 1rem;">
+            <div class="skills-container character-skills-grid">
                 ${skills.map(skill => {
                     const isProficient = skillProficiencies.includes(skill.name);
                     const abilityScore = character?.[skill.ability] || 10;
@@ -333,19 +377,19 @@ Object.assign(Initiate.prototype, {
                     const modifierStr = skillModifier >= 0 ? `+${skillModifier}` : `${skillModifier}`;
                     
                     return `
-                        <div class="skill-item" style="display: flex; align-items: center; padding: 0.25rem;">
-                            <input type="checkbox" id="skill-${skill.name}" name="skill_proficiencies[]" value="${skill.name}" 
-                                   ${isProficient ? 'checked' : ''} ${canEdit ? '' : 'disabled'} style="margin-right: 0.5rem;">
-                            <label for="skill-${skill.name}" style="flex: 1; font-size: 0.9rem;">${skill.label} (${skill.ability.substr(0,3).toUpperCase()})</label>
-                            <span class="skill-modifier" style="font-weight: bold; min-width: 2rem; text-align: right;">${modifierStr}</span>
+                        <div class="skill-item character-skill-row">
+                            <input type="checkbox" id="skill-${skill.name}" name="skills[]" value="${skill.name}" 
+                                   ${isProficient ? 'checked' : ''} ${canEdit ? '' : 'disabled'} class="skill-checkbox">
+                            <label for="skill-${skill.name}" class="skill-label">${skill.label} (${skill.ability.substr(0,3).toUpperCase()})</label>
+                            <span class="skill-modifier">${modifierStr}</span>
                         </div>
                     `;
                 }).join('')}
             </div>
             
-            <div class="saving-throws" style="margin-top: 1rem;">
+            <div class="saving-throws character-saves-section">
                 <h4>Saving Throws</h4>
-                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem;">
+                <div class="character-saves-grid">
                     ${['strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma'].map(ability => {
                         const saveProficiencies = character?.additional_data?.saving_throw_proficiencies || [];
                         const isProficient = saveProficiencies.includes(ability);
@@ -356,11 +400,11 @@ Object.assign(Initiate.prototype, {
                         const modifierStr = saveModifier >= 0 ? `+${saveModifier}` : `${saveModifier}`;
                         
                         return `
-                            <div class="save-item" style="display: flex; align-items: center; padding: 0.25rem;">
-                                <input type="checkbox" id="save-${ability}" name="saving_throw_proficiencies[]" value="${ability}" 
-                                       ${isProficient ? 'checked' : ''} ${canEdit ? '' : 'disabled'} style="margin-right: 0.5rem;">
-                                <label for="save-${ability}" style="flex: 1; font-size: 0.9rem;">${ability.charAt(0).toUpperCase() + ability.slice(1)}</label>
-                                <span class="save-modifier" style="font-weight: bold; min-width: 2rem; text-align: right;">${modifierStr}</span>
+                            <div class="save-item character-save-row">
+                                <input type="checkbox" id="save-${ability}" name="saving_throws[]" value="${ability}" 
+                                       ${isProficient ? 'checked' : ''} ${canEdit ? '' : 'disabled'} class="save-checkbox">
+                                <label for="save-${ability}" class="save-label">${ability.charAt(0).toUpperCase() + ability.slice(1)}</label>
+                                <span class="save-modifier">${modifierStr}</span>
                             </div>
                         `;
                     }).join('')}
@@ -391,12 +435,28 @@ Object.assign(Initiate.prototype, {
 
     async saveCharacter(formData, isEditing) {
         try {
-            // Prepare character data
+            // Collect skill proficiencies if any checkboxes exist
+            const skills = [];
+            const skillCheckboxes = document.querySelectorAll('input[name="skills[]"]:checked');
+            skillCheckboxes.forEach(checkbox => {
+                skills.push(checkbox.value);
+            });
+
+            // Collect saving throw proficiencies if any checkboxes exist
+            const savingThrows = [];
+            const savingThrowCheckboxes = document.querySelectorAll('input[name="saving_throws[]"]:checked');
+            savingThrowCheckboxes.forEach(checkbox => {
+                savingThrows.push(checkbox.value);
+            });
+
+            // Prepare character data using the unified structure
             const characterData = {
                 name: formData.get('name'),
                 race: formData.get('race'),
-                class: formData.get('class'),
+                char_class: formData.get('class'), // Convert 'class' to 'char_class' for unified structure
                 level: parseInt(formData.get('level')) || 1,
+                background: formData.get('background') || '',
+                alignment: formData.get('alignment') || '',
                 strength: parseInt(formData.get('strength')) || 10,
                 dexterity: parseInt(formData.get('dexterity')) || 10,
                 constitution: parseInt(formData.get('constitution')) || 10,
@@ -404,28 +464,43 @@ Object.assign(Initiate.prototype, {
                 wisdom: parseInt(formData.get('wisdom')) || 10,
                 charisma: parseInt(formData.get('charisma')) || 10,
                 armor_class: parseInt(formData.get('armor_class')) || 10,
+                hit_points: parseInt(formData.get('max_hit_points')) || parseInt(formData.get('current_hit_points')) || 1,
                 speed: parseInt(formData.get('speed')) || 30,
-                max_hit_points: parseInt(formData.get('max_hit_points')) || 1,
-                current_hit_points: parseInt(formData.get('current_hit_points')) || 1,
-                additional_data: {
-                    background: formData.get('background') || '',
-                    notes: formData.get('notes') || '',
-                    equipment: formData.get('equipment') ? formData.get('equipment').split('\\n').filter(item => item.trim()) : []
-                }
+                proficiency_bonus: parseInt(formData.get('proficiency_bonus')) || 2,
+                initiative_modifier: parseInt(formData.get('initiative_modifier')) || 0,
+                skills: skills,
+                saving_throws: savingThrows,
+                equipment: formData.get('equipment') ? formData.get('equipment').split('\\n').filter(item => item.trim()) : [],
+                features_traits: formData.get('features_traits') || '',
+                backstory: formData.get('backstory') || '',
+                notes: formData.get('notes') || '',
+                is_npc: formData.get('is_npc') === 'true'
             };
 
-            const data = {
-                action: isEditing ? 'update' : 'create',
-                campaign_id: parseInt(formData.get('campaign_id')),
-                character_data: characterData,
-                csrf_token: this.csrfToken
-            };
+            // Determine if this is a campaign character or standalone
+            const campaign_id = parseInt(formData.get('campaign_id'));
+            
+            let data, endpoint;
+            if (campaign_id && campaign_id > 0) {
+                // Campaign-linked character - use unified createCharacter function
+                data = {
+                    action: isEditing ? 'update' : 'create',
+                    campaign_id: campaign_id,
+                    character_data: characterData,
+                    csrf_token: this.csrfToken
+                };
+                endpoint = 'api/characters.php';
+            } else {
+                // Standalone character
+                data = characterData;
+                endpoint = 'api/characters.php?action=create_standalone';
+            }
 
-            if (isEditing) {
+            if (isEditing && campaign_id > 0) {
                 data.character_id = parseInt(formData.get('character_id'));
             }
 
-            const response = await fetch('api/characters.php', {
+            const response = await fetch(endpoint, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
