@@ -1,0 +1,495 @@
+/**
+ * Character Creation Styles
+ * 
+ * Dedicated CSS file for character creation interface
+ * to avoid conflicts with modal and other general styles.
+ */
+
+/* Character Creation View Layout */
+.character-creation-view {
+    min-height: 100vh;
+    background: var(--bg-color);
+    padding: 0;
+}
+
+.character-creation-header {
+    background: var(--surface-color);
+    border-bottom: 2px solid var(--accent-color);
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.character-creation-header .header-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.character-creation-header .header-left h2 {
+    margin: 0;
+    color: var(--accent-color);
+    font-size: 1.5rem;
+}
+
+.character-creation-header .header-right {
+    display: flex;
+    gap: 1rem;
+}
+
+.character-creation-content {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem;
+    background: var(--surface-color);
+    margin-top: 1rem;
+    margin-bottom: 2rem;
+    border-radius: var(--border-radius);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    min-height: calc(100vh - 200px);
+}
+
+/* Character Form Layout in Creation View */
+.character-creation-view .character-form {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: auto auto auto auto;
+    gap: 1.5rem;
+    max-width: none;
+    min-height: auto;
+    padding: 1rem;
+}
+
+/* Character section base styling */
+.character-creation-view .character-section {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 12px;
+    padding: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    min-height: 300px;
+    display: flex;
+    flex-direction: column;
+}
+
+.character-creation-view .character-section h4 {
+    color: var(--accent-color);
+    border-bottom: 2px solid var(--accent-color);
+    padding-bottom: 0.75rem;
+    margin-bottom: 1.5rem;
+    font-size: 1.2rem;
+    margin-top: 0;
+    flex-shrink: 0;
+}
+
+/* Explicit grid positioning using classes instead of nth-child */
+.character-creation-view .character-basics-section {
+    grid-column: 1;
+    grid-row: 1;
+}
+
+.character-creation-view .ability-scores-section {
+    grid-column: 2;
+    grid-row: 1;
+}
+
+.character-creation-view .character-details-section {
+    grid-column: 3;
+    grid-row: 1;
+}
+
+/* Skills section spanning full width */
+.character-creation-view .character-section.skills-section {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    margin-top: 1rem;
+}
+
+/* Character story section - full width third row */
+.character-creation-view .character-story-section {
+    grid-column: 1 / -1;
+    grid-row: 3;
+    margin-top: 1rem;
+}
+
+/* Form actions - position outside the grid */
+.character-creation-view .form-actions {
+    grid-column: 1 / -1;
+    grid-row: 4;
+    margin-top: 2rem;
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    padding: 1.5rem;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    border-top: 2px solid var(--accent-color);
+}
+
+/* Equipment section - outside the main grid */
+.character-creation-view .equipment-section {
+    display: none; /* Hide for now, will be added later outside the grid */
+}
+
+.character-creation-view .character-section {
+    margin-bottom: 1.5rem;
+}
+
+.character-creation-view .character-section h4 {
+    color: var(--accent-color);
+    border-bottom: 2px solid var(--accent-color);
+    padding-bottom: 0.5rem;
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+}
+
+/* Ability Scores - Clean styling without conflicts */
+.character-creation-view .ability-scores {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    max-width: 100%;
+}
+
+.character-creation-view .ability-score {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    padding: 1rem 0.75rem;
+    height: 110px;
+    width: 100%;
+    justify-content: space-between;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.character-creation-view .ability-score:hover {
+    background: rgba(0, 0, 0, 0.7);
+    border-color: var(--accent-color);
+}
+
+.character-creation-view .ability-score label {
+    display: block;
+    margin: 0 0 0.25rem 0;
+    font-weight: 700;
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-primary);
+    text-align: center;
+    width: 100%;
+    line-height: 1;
+}
+
+.character-creation-view .ability-score input {
+    width: 45px;
+    height: 45px;
+    text-align: center;
+    font-size: 1.3rem;
+    font-weight: bold;
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 6px;
+    color: var(--text-primary);
+    margin: 0;
+    padding: 0;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+}
+
+.character-creation-view .ability-score input:focus {
+    border-color: var(--accent-color);
+    background: rgba(255, 255, 255, 0.2);
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(218, 165, 32, 0.4);
+}
+
+.character-creation-view .ability-modifier {
+    background: var(--accent-color);
+    color: var(--surface-color);
+    padding: 0.2rem 0.4rem;
+    border-radius: 12px;
+    font-weight: bold;
+    font-size: 0.75rem;
+    display: inline-block;
+    min-width: 30px;
+    margin: 0;
+    text-align: center;
+}
+
+/* Dice roll section styling */
+.character-creation-view .dice-roll-section {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 1rem;
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+}
+
+/* Saving Throws - Compact layout under ability scores */
+.character-creation-view .saving-throws-section {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+}
+
+.character-creation-view .saving-throws-section h5 {
+    margin: 0 0 0.75rem 0;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--accent-color);
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.character-creation-view .saving-throws-compact {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    gap: 0.5rem;
+    max-width: 100%;
+}
+
+.character-creation-view .saving-throws-compact .form-check {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    padding: 0.4rem 0.6rem;
+    margin: 0;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.character-creation-view .saving-throws-compact .form-check:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: var(--accent-color);
+}
+
+.character-creation-view .saving-throws-compact .form-check input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    margin-right: 0.4rem;
+    margin-bottom: 0;
+}
+
+.character-creation-view .saving-throws-compact .form-check label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.character-creation-view .saving-throws-compact .form-check input[type="checkbox"]:checked + label {
+    color: var(--accent-color);
+}
+
+.character-creation-view .saving-throws-compact .form-check:has(input[type="checkbox"]:checked) {
+    background: rgba(218, 165, 32, 0.2);
+    border-color: var(--accent-color);
+}
+
+/* Character Details grid layout */
+.character-creation-view .character-details-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: repeat(3, 1fr);
+    gap: 1rem;
+    flex: 1;
+    align-content: start;
+}
+
+.character-creation-view .character-details-grid .form-group:nth-child(5) {
+    grid-column: 1 / -1;
+    grid-row: 3;
+}
+
+/* Skills & Proficiencies full-width section */
+.character-creation-view .skills-proficiencies-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 2rem;
+    margin-top: 1rem;
+}
+
+.character-creation-view .skills-column h5,
+.character-creation-view .other-proficiencies-column h5 {
+    color: var(--accent-color);
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.character-creation-view .skills-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+}
+
+.character-creation-view .skills-grid .form-check {
+    display: flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    padding: 0.5rem;
+    margin: 0;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.character-creation-view .skills-grid .form-check:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: var(--accent-color);
+}
+
+.character-creation-view .skills-grid .form-check input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    margin-right: 0.5rem;
+    margin-bottom: 0;
+}
+
+.character-creation-view .skills-grid .form-check label {
+    font-size: 0.8rem;
+    color: var(--text-primary);
+    margin: 0;
+    cursor: pointer;
+    flex: 1;
+}
+
+.character-creation-view .skills-grid .form-check input[type="checkbox"]:checked + label {
+    color: var(--accent-color);
+    font-weight: 600;
+}
+
+.character-creation-view .skills-grid .form-check:has(input[type="checkbox"]:checked) {
+    background: rgba(218, 165, 32, 0.2);
+    border-color: var(--accent-color);
+}
+.character-creation-view .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    flex: 1;
+}
+
+.character-creation-view .form-group {
+    display: flex;
+    flex-direction: column;
+    min-height: 60px;
+}
+
+.character-creation-view .form-group label {
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+}
+
+.character-creation-view .form-control {
+    padding: 0.5rem;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+    flex: 1;
+    min-height: 35px;
+}
+
+.character-creation-view .form-control:focus {
+    border-color: var(--accent-color);
+    background: rgba(255, 255, 255, 0.1);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(218, 165, 32, 0.3);
+}
+    color: var(--text-primary);
+    font-size: 1rem;
+    transition: all 0.2s ease;
+}
+
+.character-creation-view .form-control:focus {
+    border-color: var(--accent-color);
+    background: rgba(255, 255, 255, 0.1);
+    outline: none;
+}
+
+/* Browse button styling */
+.character-creation-view .input-with-browse {
+    display: flex;
+    gap: 0.5rem;
+    align-items: end;
+}
+
+.character-creation-view .input-with-browse input {
+    flex: 1;
+}
+
+.character-creation-view .input-with-browse .btn {
+    height: 35px;
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+    white-space: nowrap;
+}
+
+/* Responsive design */
+@media (max-width: 1200px) {
+    .character-creation-view .character-form {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    
+    .character-creation-content {
+        margin: 1rem;
+        padding: 1rem;
+    }
+    
+    .character-creation-header {
+        padding: 1rem;
+    }
+    
+    .character-creation-header .header-left h2 {
+        font-size: 1.2rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .character-creation-view .ability-scores {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+    
+    .character-creation-view .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .character-creation-view .dice-roll-section {
+        flex-direction: column;
+        align-items: center;
+    }
+}

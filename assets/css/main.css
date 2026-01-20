@@ -110,47 +110,66 @@ h3 {
 .ability-scores {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 0.8rem;
+    gap: 1.25rem;
     margin-bottom: 1rem;
 }
 
 .ability-score {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     text-align: center;
     background: rgba(0, 0, 0, 0.3);
-    border-radius: 6px;
-    padding: 0.8rem;
+    border-radius: 8px;
+    padding: 1.25rem;
+    min-height: 140px;
+    width: 100%;
+    max-width: 120px;
+    margin: 0 auto;
+    justify-content: space-between;
 }
 
 .ability-score label {
     display: block;
-    margin-bottom: 0.4rem !important;
-    font-weight: 600 !important;
-    font-size: 0.8rem !important;
+    margin-bottom: 0.75rem !important;
+    font-weight: 700 !important;
+    font-size: 0.75rem !important;
     text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-primary);
 }
 
 .ability-score input {
-    width: 50px !important;
-    height: 50px !important;
+    width: 60px !important;
+    height: 60px !important;
     text-align: center;
-    font-size: 1.1rem !important;
+    font-size: 1.25rem !important;
     font-weight: bold;
     background: rgba(255, 255, 255, 0.1);
     border: 2px solid rgba(255, 255, 255, 0.2);
-    border-radius: 6px;
+    border-radius: 8px;
     color: var(--text-primary);
-    margin-bottom: 0.4rem !important;
+    margin-bottom: 0.75rem !important;
     padding: 0 !important;
+    transition: all 0.2s ease;
+}
+
+.ability-score input:focus {
+    border-color: var(--accent-color);
+    background: rgba(255, 255, 255, 0.15);
+    outline: none;
 }
 
 .ability-modifier {
     background: var(--accent-color);
     color: var(--surface-color);
-    padding: 0.2rem 0.5rem;
-    border-radius: 3px;
+    padding: 0.4rem 0.7rem;
+    border-radius: 4px;
     font-weight: bold;
-    font-size: 0.8rem;
+    font-size: 0.85rem;
     display: inline-block;
+    min-width: 45px;
+    margin-top: auto;
 }
 
 .skills-grid {
@@ -215,12 +234,109 @@ h3 {
     margin: 0 0.5rem;
 }
 
-/* Force consistent modal sizing */
+/* Character Creation View (Non-Modal) */
+.character-creation-view {
+    min-height: 100vh;
+    background: var(--bg-color);
+    padding: 0;
+}
+
+.character-creation-header {
+    background: var(--surface-color);
+    border-bottom: 2px solid var(--accent-color);
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.character-creation-header .header-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.character-creation-header .header-left h2 {
+    margin: 0;
+    color: var(--accent-color);
+    font-size: 1.5rem;
+}
+
+.character-creation-header .header-right {
+    display: flex;
+    gap: 1rem;
+}
+
+.character-creation-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+    background: var(--surface-color);
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+    border-radius: var(--border-radius);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Improve character form layout in the new view */
+.character-creation-view .character-form {
+    display: grid;
+    grid-template-columns: 1fr 400px;
+    gap: 2rem;
+    max-width: none;
+}
+
+.character-creation-view .character-section {
+    margin-bottom: 1.5rem;
+}
+
+.character-creation-view .character-section h4 {
+    color: var(--accent-color);
+    border-bottom: 2px solid var(--accent-color);
+    padding-bottom: 0.5rem;
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+}
+
+/* Responsive design for character creation view */
+@media (max-width: 1024px) {
+    .character-creation-view .character-form {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    
+    .character-creation-content {
+        margin: 1rem;
+        padding: 1rem;
+    }
+    
+    .character-creation-header {
+        padding: 1rem;
+    }
+    
+    .character-creation-header .header-left h2 {
+        font-size: 1.2rem;
+    }
+}
+
+/* Force consistent modal sizing - Updated with higher specificity */
 #character-creation-modal .modal-content,
 #character-sheet-modal .modal-content {
     max-width: 1200px !important;
     width: 95% !important;
     max-height: 95vh !important;
+}
+
+/* Additional specificity for character modals */
+div#character-creation-modal div.modal-content.modal-xl,
+div#character-creation-modal .modal-content {
+    max-width: 1200px !important;
+    width: 95% !important;
+    margin: 20px auto !important;
 }
 
 #character-creation-modal .modal-body,
@@ -237,7 +353,7 @@ h3 {
     }
     
     .character-form .form-row {
-        grid-template-columns: 1fr !important;
+        grid-template-columns: 1fr;
     }
     
     .ability-scores {

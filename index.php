@@ -20,8 +20,9 @@ $user = getCurrentUser();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Initiate - D&D Campaign Tracker</title>
-    <link rel="stylesheet" href="assets/css/main.css">
-    <link rel="stylesheet" href="assets/css/dashboard.css">
+    <link rel="stylesheet" href="assets/css/main.css?v=<?php echo filemtime('assets/css/main.css'); ?>">
+    <link rel="stylesheet" href="assets/css/dashboard.css?v=<?php echo filemtime('assets/css/dashboard.css'); ?>">
+    <link rel="stylesheet" href="assets/css/character-creation.css?v=<?php echo filemtime('assets/css/character-creation.css'); ?>">>
 </head>
 
 <body>

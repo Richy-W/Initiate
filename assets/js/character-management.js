@@ -24,19 +24,35 @@ class CharacterManager {
 
     initializeEventListeners() {
         // Character creation button
-        document.getElementById('create-character-btn')?.addEventListener('click', () => {
-            this.openCharacterCreation();
-        });
+        const createBtn = document.getElementById('create-character-btn');
+        if (createBtn) {
+            console.log('Setting up create character button listener');
+            createBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                console.log('Create character button clicked');
+                this.openCharacterCreation();
+            });
+        } else {
+            console.warn('Create character button not found');
+        }
 
         // My characters button
-        document.getElementById('my-characters-btn')?.addEventListener('click', () => {
-            this.openMyCharacters();
-        });
+        const myCharsBtn = document.getElementById('my-characters-btn');
+        if (myCharsBtn) {
+            myCharsBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.openMyCharacters();
+            });
+        }
 
         // Hide character display button
-        document.getElementById('hide-character-btn')?.addEventListener('click', () => {
-            this.hideCharacterDisplay();
-        });
+        const hideBtn = document.getElementById('hide-character-btn');
+        if (hideBtn) {
+            hideBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.hideCharacterDisplay();
+            });
+        }
 
         // Modal close buttons
         this.setupModalCloseHandlers();
@@ -64,13 +80,18 @@ class CharacterManager {
     }
 
     openCharacterCreation() {
-        // Use the unified form method to ensure consistency
-        this.showCharacterForm(null, null, false, 'character-creation-modal');
+        console.log('openCharacterCreation called');
+        try {
+            this.showCharacterCreationView();
+        } catch (error) {
+            console.error('Error opening character creation:', error);
+            alert('Error opening character creation form: ' + error.message);
+        }
     }
 
     generateCharacterCreationForm(character = null, campaignId = null, isNPC = false) {
         const isEditing = character !== null;
-        const formId = campaignId ? 'campaign-character-form' : 'new-character-form';
+        const formId = 'character-form';
         
         return `
             <form id="${formId}" class="character-form">
@@ -92,7 +113,7 @@ class CharacterManager {
                     ` : ''}
                     
                     <!-- Basic Information -->
-                    <div class="character-section">
+                    <div class="character-section character-basics-section">
                         <h4>🎭 Character Basics</h4>
                         <div class="form-row">
                             <div class="form-group">
@@ -159,7 +180,7 @@ class CharacterManager {
                     </div>
 
                     <!-- Ability Scores -->
-                    <div class="character-section">
+                    <div class="character-section ability-scores-section">
                         <h4>💪 Ability Scores</h4>
                         <div class="ability-scores">
                             ${this.generateAbilityInputs(character)}
@@ -168,12 +189,20 @@ class CharacterManager {
                             <button type="button" id="roll-stats-btn" class="btn btn-accent">🎲 Roll 4d6 (drop lowest)</button>
                             <button type="button" id="standard-array-btn" class="btn btn-secondary">📊 Standard Array</button>
                         </div>
+                        
+                        <!-- Saving Throws Section -->
+                        <div class="saving-throws-section">
+                            <h5>🛡️ Saving Throws</h5>
+                            <div class="saving-throws-compact">
+                                ${this.generateSavingThrowsCheckboxes(character)}
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Character Details -->
-                    <div class="character-section">
+                    <div class="character-section character-details-section">
                         <h4>📜 Character Details</h4>
-                        <div class="form-row">
+                        <div class="character-details-grid">
                             <div class="form-group">
                                 <label for="char-ac">Armor Class</label>
                                 <input type="number" id="char-ac" name="armor_class" class="form-control" value="${character?.armor_class || 10}" min="1">
@@ -186,8 +215,6 @@ class CharacterManager {
                                 <label for="char-speed">Speed</label>
                                 <input type="number" id="char-speed" name="speed" class="form-control" value="${character?.speed || 30}" min="0">
                             </div>
-                        </div>
-                        <div class="form-row">
                             <div class="form-group">
                                 <label for="char-proficiency">Proficiency Bonus</label>
                                 <input type="number" id="char-proficiency" name="proficiency_bonus" class="form-control" value="${character?.proficiency_bonus || 2}" min="2" max="6">
@@ -200,24 +227,28 @@ class CharacterManager {
                     </div>
                 </div>
 
-                <!-- Skills Section -->
-                <div class="character-section">
+                <!-- Skills & Proficiencies Section (Full Width) -->
+                <div class="character-section skills-section">
                     <h4>🎯 Skills & Proficiencies</h4>
-                    <div class="skills-grid">
-                        ${this.generateSkillsCheckboxes(character)}
-                    </div>
-                </div>
-
-                <!-- Saving Throws Section -->
-                <div class="character-section">
-                    <h4>🛡️ Saving Throw Proficiencies</h4>
-                    <div class="saving-throws-grid">
-                        ${this.generateSavingThrowsCheckboxes(character)}
+                    <div class="skills-proficiencies-grid">
+                        <div class="skills-column">
+                            <h5>Skills</h5>
+                            <div class="skills-grid">
+                                ${this.generateSkillsCheckboxes(character)}
+                            </div>
+                        </div>
+                        <div class="other-proficiencies-column">
+                            <h5>Other Proficiencies</h5>
+                            <div class="form-group">
+                                <label for="selected-proficiencies">Languages, Tools & Instruments</label>
+                                <textarea id="selected-proficiencies" name="selected_proficiencies" class="form-control" rows="4" placeholder="Languages, tools, instruments, etc...">${character?.selected_proficiencies || ''}</textarea>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Equipment Section -->
-                <div class="character-section">
+                <div class="character-section equipment-section">
                     <h4>🎒 Equipment</h4>
                     <div class="form-group">
                         <label for="char-equipment">Equipment & Gear</label>
@@ -230,7 +261,7 @@ class CharacterManager {
                 </div>
 
                 <!-- Character Story -->
-                <div class="character-section">
+                <div class="character-section character-story-section">
                     <h4>📖 Character Story</h4>
                     <div class="form-group">
                         <label for="char-backstory">Backstory</label>
@@ -254,36 +285,76 @@ class CharacterManager {
     }
 
     // Public method for other components to use the unified character form
+    showCharacterCreationView(character = null, campaignId = null, isNPC = false) {
+        const isEditing = character !== null;
+        const title = isEditing ? `Edit ${character.name}` : 'Create New Character';
+        
+        // Get the main content area
+        const mainContent = document.querySelector('.dashboard-main');
+        if (!mainContent) {
+            console.error('Main content area not found');
+            return;
+        }
+        
+        // Store the original content so we can restore it
+        if (!this.originalDashboardContent) {
+            this.originalDashboardContent = mainContent.innerHTML;
+        }
+        
+        // Create the character creation view
+        const characterCreationView = `
+            <div class="character-creation-view">
+                <div class="character-creation-header">
+                    <div class="header-left">
+                        <button id="back-to-dashboard" class="btn btn-secondary">
+                            <span>← Back to Dashboard</span>
+                        </button>
+                        <h2>${title}</h2>
+                    </div>
+                    <div class="header-right">
+                        <button type="submit" form="character-form" class="btn btn-accent">
+                            <span>💾 Save Character</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="character-creation-content">
+                    ${this.generateCharacterCreationForm(character, campaignId, isNPC)}
+                </div>
+            </div>
+        `;
+        
+        // Replace the main content
+        mainContent.innerHTML = characterCreationView;
+        
+        // Setup form handlers
+        this.setupCharacterForm();
+        this.setupAbilityModifiers();
+        this.setupViewNavigation();
+    }
+
     showCharacterForm(character = null, campaignId = null, isNPC = false, containerId = 'character-creation-modal', modalTitle = null) {
         const isEditing = character !== null;
         const title = modalTitle || (isEditing ? `Edit ${character.name}` : (campaignId ? 'Create Campaign Character' : 'Create New Character'));
         
-        // Use ModalFactory to create or show existing modal
+        // Always create a new modal to ensure proper structure
         const existingModal = document.getElementById(containerId);
-        if (!existingModal) {
-            ModalFactory.create({
-                id: containerId,
-                title: title,
-                size: 'xlarge',
-                content: this.generateCharacterCreationForm(character, campaignId, isNPC),
-                customClasses: ['character-modal']
-            });
-        } else {
-            // Update existing modal content
-            const titleElement = existingModal.querySelector('.modal-title');
-            if (titleElement) {
-                titleElement.textContent = title;
-            }
-            
-            let contentContainer = existingModal.querySelector('.modal-body');
-            if (containerId === 'character-sheet-modal') {
-                contentContainer = existingModal.querySelector('#character-sheet-content') || contentContainer;
-            }
-            
-            if (contentContainer) {
-                contentContainer.innerHTML = this.generateCharacterCreationForm(character, campaignId, isNPC);
-            }
+        if (existingModal) {
+            existingModal.remove();
         }
+        
+        // Create the modal
+        const modal = ModalFactory.create({
+            id: containerId,
+            title: title,
+            size: 'xlarge',
+            content: this.generateCharacterCreationForm(character, campaignId, isNPC),
+            customClasses: ['character-modal']
+        });
+        
+        console.log('Created modal:', modal);
+        console.log('Modal classes:', modal.className);
+        console.log('Modal content element:', modal.querySelector('.modal-content'));
+        console.log('Modal content classes:', modal.querySelector('.modal-content')?.className);
         
         ModalFactory.show(containerId);
         
@@ -375,6 +446,26 @@ class CharacterManager {
         `).join('');
     }
 
+    setupViewNavigation() {
+        const backButton = document.getElementById('back-to-dashboard');
+        if (backButton) {
+            backButton.addEventListener('click', () => {
+                this.returnToDashboard();
+            });
+        }
+    }
+
+    returnToDashboard() {
+        const mainContent = document.querySelector('.dashboard-main');
+        if (mainContent && this.originalDashboardContent) {
+            mainContent.innerHTML = this.originalDashboardContent;
+            // Reinitialize dashboard if needed
+            if (window.dashboardManager) {
+                window.dashboardManager.loadCampaigns();
+            }
+        }
+    }
+
     setupCharacterForm() {
         // Setup ability score modifiers
         this.setupAbilityModifiers();
@@ -389,11 +480,17 @@ class CharacterManager {
             this.applyStandardArray();
         });
 
-        // Setup form submission
-        document.getElementById('new-character-form')?.addEventListener('submit', (e) => {
-            e.preventDefault();
-            this.submitCharacterForm(e.target);
-        });
+        // Setup form submission - handle both old and new form IDs
+        const characterForm = document.getElementById('character-form') || 
+                             document.getElementById('new-character-form') || 
+                             document.getElementById('campaign-character-form');
+        
+        if (characterForm) {
+            characterForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                this.submitCharacterForm(e.target);
+            });
+        }
     }
 
     setupAbilityModifiers() {
@@ -520,7 +617,8 @@ class CharacterManager {
 
             if (result.success) {
                 this.showAlert('Character created successfully!', 'success');
-                ModalFactory.closeAll();
+                // Return to dashboard instead of closing modals
+                this.returnToDashboard();
                 this.loadMyCharacters(); // Refresh character list
             } else {
                 this.showAlert('Error creating character: ' + result.message, 'error');
@@ -953,12 +1051,18 @@ class CharacterManager {
     }
 }
 
-// Initialize character manager immediately
-window.characterManager = new CharacterManager();
-
-// Also reinitialize on DOM ready to set up event listeners for elements that may not have existed
+// Initialize character manager when DOM is fully loaded
 document.addEventListener('DOMContentLoaded', () => {
-    if (!window.characterManager) {
-        window.characterManager = new CharacterManager();
-    }
+    console.log('DOM loaded, initializing CharacterManager');
+    window.characterManager = new CharacterManager();
+    console.log('CharacterManager initialized:', window.characterManager);
 });
+
+// Fallback for immediate initialization if DOM is already loaded
+if (document.readyState === 'loading') {
+    // Document is still loading, wait for DOMContentLoaded
+} else {
+    // Document is already loaded, initialize immediately
+    console.log('Document already loaded, initializing CharacterManager immediately');
+    window.characterManager = new CharacterManager();
+}
